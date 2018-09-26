@@ -11,11 +11,13 @@
 <body>
   <div id="app" class="{{ route_class() }}-page">
       @include('layouts._header')
+      @include('layouts._message')
       <div class="container">
         @yield('content')
       </div>
       @include('layouts._footer')
   </div>
   <script src="{{ mix('js/app.js') }}"></script>
+  @yield('scripts')
 </body>
 </html>

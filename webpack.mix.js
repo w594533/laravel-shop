@@ -12,5 +12,9 @@ let mix = require('laravel-mix');
  */
 
 mix.js('resources/assets/js/app.js', 'public/js')
+   .scripts([
+     'resources/assets/js/distpicker/distpicker.data.min.js',
+     'resources/assets/js/distpicker/distpicker.min.js',
+   ], 'public/js/distpicker.js')
    .sass('resources/assets/sass/app.scss', 'public/css')
    .version();

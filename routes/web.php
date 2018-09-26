@@ -21,6 +21,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/email_verification/send', 'EmailVerificationController@send')->name('email_verification.send');
     Route::get('/email_verification/{token}', 'EmailVerificationController@verify')->name('email_verification.verify');
 
+    Route::resource('user_addresses', 'UserAddressController');
+
     Route::group(['middleware' => 'emailVerify'], function () {
         Route::get('/test', function () {
             return '已认证邮箱';
