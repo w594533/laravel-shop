@@ -83,7 +83,9 @@ class ProductsController extends Controller
         $grid->id('Id');
         $grid->title('名称');
         // $grid->description('描述');
-        $grid->image('图片');
+        $grid->image('图片')->display(function ($value) {
+            return '<image src="'.\Storage::url('uploads/'.$value).'" width="50"/>';
+        });
         $grid->on_sale('是否上架')->display(function ($value) {
             return $value ? '是':'否';
         });
@@ -141,14 +143,47 @@ class ProductsController extends Controller
     {
         $form = new Form(new Product);
 
-        $form->text('title', 'Title');
-        $form->textarea('description', 'Description');
-        $form->image('image', 'Image');
-        $form->switch('on_sale', 'On sale')->default(1);
-        $form->decimal('rating', 'Rating')->default(5.00);
-        $form->number('sold_count', 'Sold count');
-        $form->number('review_count', 'Review count');
-        $form->decimal('price', 'Price');
+        // 创建一个输入框，第一个参数 title 是模型的字段名，第二个参数是该字段描述
+        $form->text('title', '商品名称')->rules('required');
+
+        // 创建一个选择图片的框
+        $form->image('image', '封面图片')->removable()->rules('required|image');
+
+        // 创建一个富文本编辑器
+        $form->editor('description', '商品描述')->rules('required');
+
+        // 创建一组单选框
+        $form->radio('on_sale', '上架')->options(['1' => '是', '0'=> '否'])->default('0');
+
+        // 直接添加一对多的关联模型
+        $form->hasMany('skus', 'SKU 列表', function (Form\NestedForm $form) {
+            $form->text('title', 'SKU 名称')->rules('required');
+            $form->text('description', 'SKU 描述')->rules('required');
+            $form->text('price', '单价')->rules('required|numeric|min:0.01');
+            $form->text('stock', '剩余库存')->rules('required|integer|min:0');
+        });
+
+        $form->saving(function (Form $form) {
+            $form->model()->price = collect($form->input('skus'))->where(Form::REMOVE_FLAG_NAME, 0)->min('price') ?: 0;
+        });
+        //
+        $form->footer(function ($footer) {
+
+            // 去掉`重置`按钮
+            // $footer->disableReset();
+
+            // 去掉`提交`按钮
+            // $footer->disableSubmit();
+
+            // 去掉`查看`checkbox
+            $footer->disableViewCheck();
+
+            // 去掉`继续编辑`checkbox
+            $footer->disableEditingCheck();
+
+            // 去掉`继续创建`checkbox
+            // $footer->disableCreatingCheck();
+        });
 
         return $form;
     }
