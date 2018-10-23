@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Exceptions\InvalidRequestException;
 
 class ProductsController extends Controller
 {
@@ -45,7 +46,11 @@ class ProductsController extends Controller
         );
     }
 
-    public function show()
+    public function show(Product $product)
     {
+        if (!$product->on_sale) {
+            throw new InvalidRequestException('商品已下架');
+        }
+        return view('products.show', ['product' => $product]);
     }
 }
