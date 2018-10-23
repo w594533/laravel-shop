@@ -84,7 +84,7 @@ class ProductsController extends Controller
         $grid->title('名称');
         // $grid->description('描述');
         $grid->image('图片')->display(function ($value) {
-            return '<image src="'.\Storage::url('uploads/'.$value).'" width="50"/>';
+            return '<image src="'.$this->image_url.'" width="50"/>';
         });
         $grid->on_sale('是否上架')->display(function ($value) {
             return $value ? '是':'否';
@@ -164,7 +164,9 @@ class ProductsController extends Controller
         });
 
         $form->saving(function (Form $form) {
-            $form->model()->price = collect($form->input('skus'))->where(Form::REMOVE_FLAG_NAME, 0)->min('price') ?: 0;
+            if ($form->input('skus')) {
+                $form->model()->price = collect($form->input('skus'))->where(Form::REMOVE_FLAG_NAME, 0)->min('price') ?: 0;
+            }
         });
         //
         $form->footer(function ($footer) {

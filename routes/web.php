@@ -29,3 +29,4 @@ Route::group(['middleware' => 'auth'], function () {
         });
     });
 });
+Route::resource('products', 'ProductsController', ['only' => ['index', 'show']]);
