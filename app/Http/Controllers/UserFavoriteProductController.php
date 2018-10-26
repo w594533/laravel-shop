@@ -10,6 +10,14 @@ use Auth;
 
 class UserFavoriteProductController extends Controller
 {
+    public function index()
+    {
+        $products = Auth::user()->favoriteProducts()->paginate(16);
+        // dd($products);
+        return view('products.favorites', ['products' => $products]);
+    }
+
+
     public function addFavorite(Product $product)
     {
         $user = Auth::user();

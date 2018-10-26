@@ -10,7 +10,7 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
-Route::get("/", 'PagesController@root')->name('root');
+Route::get("/", 'ProductsController@index')->name('root');
 
 Auth::routes();
 
@@ -25,6 +25,7 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::post('/products/{product}/favorite', 'UserFavoriteProductController@addFavorite')->name('user.favorite.product');
     Route::delete('/products/{product}/favorite', 'UserFavoriteProductController@delFavorite')->name('user.delfavorite.product');
+    Route::get('/products/favorites', 'UserFavoriteProductController@index')->name('user.favorite.index');
 
     Route::group(['middleware' => 'emailVerify'], function () {
         Route::get('/test', function () {
