@@ -23,6 +23,9 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::resource('user_addresses', 'UserAddressController');
 
+    Route::post('/products/{product}/favorite', 'UserFavoriteProductController@addFavorite')->name('user.favorite.product');
+    Route::delete('/products/{product}/favorite', 'UserFavoriteProductController@delFavorite')->name('user.delfavorite.product');
+
     Route::group(['middleware' => 'emailVerify'], function () {
         Route::get('/test', function () {
             return '已认证邮箱';

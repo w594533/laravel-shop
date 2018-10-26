@@ -46,11 +46,17 @@ class ProductsController extends Controller
         );
     }
 
-    public function show(Product $product)
+    public function show(Product $product, Request $request)
     {
         if (!$product->on_sale) {
             throw new InvalidRequestException('商品已下架');
         }
-        return view('products.show', ['product' => $product]);
+
+        //判断是否已经收藏
+        $favor = false;
+        if ($user = $request->user()) {
+            $favor = boolval($user->favoriteProducts()->find($product->id));
+        }
+        return view('products.show', ['product' => $product, 'favor' => $favor]);
     }
 }
