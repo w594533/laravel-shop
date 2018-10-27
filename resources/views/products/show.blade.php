@@ -95,7 +95,36 @@
           location.reload()
         });
       });
-    })
+    });
+
+    $(".btn-add-to-cart").click(function() {
+      var skuId = $('input[name="skus"]:checked').val();
+      var amount = $(".cart_amount input").val();
+      axios.post('{{ route("cart.add") }}', {
+        sku_id: skuId,
+        amount: amount
+      }).then(function(response) {
+        swal('加入购物车成功', '', 'success');
+      }, function(error) {
+        if (error.response && error.response.status === 401) {
+          swal('请先登录', '', 'error');
+        } else if (error.response && error.response.status === 422) {
+          var html = '<div>';
+          _.each(error.response.data.errors, function(errors) {
+            _.each(errors, function(error) {
+              html += error + '<br/>';
+            })
+          });
+          swal({
+            content: $(html)[0],
+            icon: 'error'
+          });
+          html += "</div>";
+        } else {
+          swal('系统错误', '', 'error');
+        }
+      });
+    });
   });
 </script>
 @endsection

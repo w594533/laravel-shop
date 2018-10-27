@@ -27,6 +27,10 @@ Route::group(['middleware' => 'auth'], function () {
     Route::delete('/products/{product}/favorite', 'UserFavoriteProductController@delFavorite')->name('user.delfavorite.product');
     Route::get('/products/favorites', 'UserFavoriteProductController@index')->name('user.favorite.index');
 
+    Route::post('/cart', 'CartController@add')->name('cart.add');
+    Route::get('/cart', 'CartController@index')->name('cart.index');
+    Route::delete('/cart/{productSku}', 'CartController@remove')->name('cart.remove');
+
     Route::group(['middleware' => 'emailVerify'], function () {
         Route::get('/test', function () {
             return '已认证邮箱';

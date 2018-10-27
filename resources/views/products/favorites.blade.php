@@ -5,6 +5,7 @@
 <div class="row">
   <div class="">
     <div class="panel panel-default">
+      <div class="panel-heading">我的收藏</div>
       <div class="panel-body">
         <div class="product-list clearfix">
           @include('products._list', ['products' => $products])
