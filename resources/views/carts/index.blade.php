@@ -52,6 +52,32 @@
               @endforeach
             </tbody>
           </table>
+
+          <div>
+            <form class="form-horizontal" role="form" id="order-form">
+              <div class="form-group">
+                <label class="control-label col-sm-3">选择收货地址</label>
+                <div class="col-sm-9 col-md-7">
+                  <select class="form-control" name="address">
+                    @foreach($addresses as $address)
+                    <option value="{{ $address->id }}">{{ $address->full_address }} {{ $address->contact_name }} {{ $address->contact_phone }}</option>
+                    @endforeach
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-sm-3">备注</label>
+                <div class="col-sm-9 col-md-7">
+                  <textarea name="remark" class="form-control" rows="3"></textarea>
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="col-sm-offset-3 col-sm-3">
+                  <button type="button" class="btn btn-primary btn-create-order">提交订单</button>
+                </div>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
 
@@ -62,37 +88,87 @@
 @section('scripts')
 <script>
   $(document).ready(function() {
-    $(".btn-remove").click(function() {
-      var sku_id = $(this).parents("tr").data('id');
-      swal({
-          title: "确认要将该商品移除？",
-          icon: "warning",
-          buttons: ['取消', '确定'],
-          dangerMode: true,
-        })
-        .then(function(willDelete) {
-          // 用户点击 确定 按钮，willDelete 的值就会是 true，否则为 false
-          if (!willDelete) {
-            return;
-          }
-          axios.delete('/cart/' + sku_id)
-            .then(function() {
-              location.reload();
+    $(".btn-create-order").click(function() {
+      var req = {
+        address_id: $('#order-form').find('select[name=address]').val(),
+        items: [],
+        remark: $("#order-form").find('textarea[name=remark]').val()
+      };
+
+      $('table tr[data-id]').each(function() {
+        // 获取当前行的单选框
+        var $checkbox = $(this).find('input[name=select][type=checkbox]');
+        // 如果单选框被禁用或者没有被选中则跳过
+        if ($checkbox.prop('disabled') || !$checkbox.prop('checked')) {
+          return;
+        }
+
+        var $input = $(this).find('input[name=amount]');
+        if ($input.val() == 0 || isNaN($input.val())) {
+          return;
+        }
+
+        //把sku id 和 数量存入请求参数数组中
+        req.items.push({
+          sku_id: $(this).data('id'),
+          amount: $input.val(),
+        });
+      });
+
+      axios.post('{{ route("orders.store") }}', req)
+        .then(function(response) {
+          swal('订单提交成功', '', 'success');
+        }, function(error) {
+          if (error.response.status === 422) {
+            // http 状态码为 422 代表用户输入校验失败
+            var html = '<div>';
+            _.each(error.response.data.errors, function(errors) {
+              _.each(errors, function(error) {
+                html += error + '<br>';
+              })
+            });
+            html += '</div>';
+            swal({
+              content: $(html)[0],
+              icon: 'error'
             })
+          } else {
+            // 其他情况应该是系统挂了
+            swal('系统错误', '', 'error');
+          }
         });
     });
-
-    // 监听 全选/取消全选 单选框的变更事件
-    $('#select-all').change(function() {
-      // 获取单选框的选中状态
-      // prop() 方法可以知道标签中是否包含某个属性，当单选框被勾选时，对应的标签就会新增一个 checked 的属性
-      var checked = $(this).prop('checked');
-      // 获取所有 name=select 并且不带有 disabled 属性的勾选框
-      // 对于已经下架的商品我们不希望对应的勾选框会被选中，因此我们需要加上 :not([disabled]) 这个条件
-      $('input[name=select][type=checkbox]:not([disabled])').each(function() {
-        // 将其勾选状态设为与目标单选框一致
-        $(this).prop('checked', checked);
+  });
+  $(".btn-remove").click(function() {
+    var sku_id = $(this).parents("tr").data('id');
+    swal({
+        title: "确认要将该商品移除？",
+        icon: "warning",
+        buttons: ['取消', '确定'],
+        dangerMode: true,
+      })
+      .then(function(willDelete) {
+        // 用户点击 确定 按钮，willDelete 的值就会是 true，否则为 false
+        if (!willDelete) {
+          return;
+        }
+        axios.delete('/cart/' + sku_id)
+          .then(function() {
+            location.reload();
+          })
       });
+  });
+
+  // 监听 全选/取消全选 单选框的变更事件
+  $('#select-all').change(function() {
+    // 获取单选框的选中状态
+    // prop() 方法可以知道标签中是否包含某个属性，当单选框被勾选时，对应的标签就会新增一个 checked 的属性
+    var checked = $(this).prop('checked');
+    // 获取所有 name=select 并且不带有 disabled 属性的勾选框
+    // 对于已经下架的商品我们不希望对应的勾选框会被选中，因此我们需要加上 :not([disabled]) 这个条件
+    $('input[name=select][type=checkbox]:not([disabled])').each(function() {
+      // 将其勾选状态设为与目标单选框一致
+      $(this).prop('checked', checked);
     });
 
   });

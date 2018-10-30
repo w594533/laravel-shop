@@ -6,8 +6,8 @@ use App\Models\Order;
 
 class OrderObserver
 {
-    public function creating()
+    public function creating(Order $order)
     {
-        $this->no = Order::findAvailableNo();
+        $order->no = Order::findAvailableNo();
     }
 }

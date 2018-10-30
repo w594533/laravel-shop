@@ -14,7 +14,8 @@ class CartController extends Controller
     {
         $user = Auth::user();
         $cart_items = $user->cartItems()->with(['productSku.product'])->get();
-        return view('carts.index', ['cart_items' => $cart_items]);
+        $addresses = $user->addresses()->orderBy('last_used_at', 'desc')->get();
+        return view('carts.index', ['cart_items' => $cart_items, 'addresses' => $addresses]);
     }
 
 
