@@ -125,6 +125,8 @@ return [
 
     'log_level' => env('APP_LOG_LEVEL', 'debug'),
 
+    'order_ttl' => 30,//关闭订单时间 单位 分钟
+
     /*
     |--------------------------------------------------------------------------
     | Autoloaded Service Providers
