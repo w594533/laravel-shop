@@ -11,9 +11,16 @@ use App\Models\ProductSku;
 use App\Models\Product;
 use App\Models\UserAddress;
 use Carbon\Carbon;
+use App\Jobs\ColseOrder;
 
 class OrdersController extends Controller
 {
+    public function index()
+    {
+        $orders = Order::query()->with(['items.product', 'items.productSku'])->orderBy('created_at', 'desc')
+                              ->paginate(20);
+        return view('orders.index', ['orders'=> $orders]);
+    }
     public function store(OrderRequest $request)
     {
         $user = $request->user();
@@ -58,6 +65,7 @@ class OrdersController extends Controller
             //更新总价
             $order->update(['total_amount' => $totalAmount]);
 
+            $this->dispatch(new ColseOrder($order, config('app.order_ttl')));
             return $order;
         });
         return $order;

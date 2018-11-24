@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Order extends Model
 {
@@ -47,6 +48,22 @@ class Order extends Model
     ];
 
     protected $dates = ['paid_at'];
+
+    public function showStatus()
+    {
+        if ($this->paid_at) {
+            if ($this->refund_status === self::REFUND_STATUS_PENDING) {
+                return '已支付';
+            } else {
+                return self::$refundStatusMap[$this->refund_status];
+            }
+        } elseif ($this->closed) {
+            return '已关闭';
+        } else {
+            $create_at = new Carbon($this->created_at);
+            return '未支付<br/>订单将于' .$this->created_at->format('H:i:s').'自动关闭';
+        }
+    }
 
     public function items()
     {
