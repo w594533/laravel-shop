@@ -15,12 +15,22 @@ use App\Jobs\ColseOrder;
 
 class OrdersController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $orders = Order::query()->with(['items.product', 'items.productSku'])->orderBy('created_at', 'desc')
-                              ->paginate(20);
+        $orders = Order::query()
+                        ->where('user_id', $request->user()->id)
+                        ->with(['items.product', 'items.productSku'])
+                        ->orderBy('created_at', 'desc')
+                        ->paginate(20);
         return view('orders.index', ['orders'=> $orders]);
     }
+
+    public function show(Order $order)
+    {
+        $this->authorize('own', $order);
+        return view('orders.view', ['order' => $order->load(['items.product', 'items.productSku'])]);
+    }
+
     public function store(OrderRequest $request)
     {
         $user = $request->user();
@@ -35,7 +45,7 @@ class OrdersController extends Controller
                 'zip'           => $user_address->zip,
                 'contact_name'  => $user_address->contact_name,
                 'contact_phone' => $user_address->contact_phone,
-              ];
+            ];
             $order->remark = $request->remark;
             $order->total_amount = 0;
             $order->user()->associate($user);

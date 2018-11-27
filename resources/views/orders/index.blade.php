@@ -31,7 +31,7 @@
                   <td class="product-info">
                     <div class="media">
                       <div class="media-left">
-                        <a href="#">
+                        <a href="{{ route('orders.show', ['id' => $order]) }}">
                           <img width="64" class="media-object" src="{{ $order_item->productSku->product->image_url }}" alt="{{ $order_item->productSku->title }}">
                         </a>
                       </div>
@@ -46,7 +46,7 @@
                   @if($index === 0)
                   <td rowspan="{{ count($order->items) }}" class=" text-center">{{ $order->total_amount }}</td>
                   <td rowspan="{{ count($order->items) }}" class=" text-center">{!! $order->showStatus() !!}</td>
-                  <td rowspan="{{ count($order->items) }}" class=" text-center"><a class="btn btn-primary btn-xs" href="">查看订单</a></td>
+                  <td rowspan="{{ count($order->items) }}" class=" text-center"><a class="btn btn-primary btn-xs" href="{{ route('orders.show', ['id' => $order]) }}">查看订单</a></td>
                   @endif
                 </tr>
                 @endforeach

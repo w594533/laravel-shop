@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Carbon\Carbon;
 
 class Order extends Model
@@ -83,4 +84,12 @@ class Order extends Model
         } while (static::query()->where('no', $no)->exists());
         return $no;
     }
+
+    // public function getAttributeAddress($value)
+    // {
+    //     dd($value);
+    //     $arr = json_decode($value, true);
+    //     dd($arr);
+    //     // return $arr['address'].' '. $arr['zip'].' '. $arr['contact_name'].' '. $arr['contact_phone'];
+    // }
 }
