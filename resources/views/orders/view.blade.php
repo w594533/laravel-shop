@@ -65,6 +65,15 @@
                 <span class="pull-left">订单状态：</span>
                 <span class="pull-right">{!! $order->showStatus() !!}</span>
               </li>
+
+              <!-- 支付按钮开始 -->
+              @if(!$order->paid_at && !$order->closed)
+                <li class="payment-buttons clearfix">
+                  <a class="btn btn-primary btn-sm pull-right" href="{{ route('payment.alipay', ['order' => $order->id]) }}">支付宝支付</a>
+                </li>
+                @endif
+                <!-- 支付按钮结束 -->
+
             </ul>
           </div>
         </div>

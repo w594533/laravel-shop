@@ -14,6 +14,8 @@ Route::get("/", 'ProductsController@index')->name('root');
 
 Auth::routes();
 
+Route::get("/payment/return", 'PaymentController@return')->name('payment.return');
+Route::post("/payment/notify", 'PaymentController@notify')->name('payment.notify');
 
 Route::group(['middleware' => 'auth'], function () {
     Route::get('/email_verify_notice', 'PagesController@emailVerifyNotice')->name('email_verify_notice');
@@ -34,13 +36,9 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post("/orders", 'OrdersController@store')->name('orders.store');
     Route::get("/orders", 'OrdersController@index')->name('orders.index');
     Route::get("/orders/{order}", 'OrdersController@show')->name('orders.show');
-    Route::get('alipay', function () {
-        return app('alipay')->web([
-            'out_trade_no' => time(),
-            'total_amount' => '1',
-            'subject' => 'test subject - 测试',
-        ]);
-    });
+
+    Route::get('/payment/{order}/alipay', 'PaymentController@alipay')->name('payment.alipay');
+
     Route::group(['middleware' => 'emailVerify'], function () {
         Route::get('/test', function () {
             return '已认证邮箱';
