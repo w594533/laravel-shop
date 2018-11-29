@@ -31,7 +31,7 @@
                   <td class="product-info">
                     <div class="media">
                       <div class="media-left">
-                        <a href="{{ route('orders.show', ['id' => $order]) }}">
+                        <a href="{{ route('orders.show', ['order' => $order->id]) }}">
                           <img width="64" class="media-object" src="{{ $order_item->productSku->product->image_url }}" alt="{{ $order_item->productSku->title }}">
                         </a>
                       </div>

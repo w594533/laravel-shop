@@ -85,11 +85,8 @@ class Order extends Model
         return $no;
     }
 
-    // public function getAttributeAddress($value)
-    // {
-    //     dd($value);
-    //     $arr = json_decode($value, true);
-    //     dd($arr);
-    //     // return $arr['address'].' '. $arr['zip'].' '. $arr['contact_name'].' '. $arr['contact_phone'];
-    // }
+    public function canPay()
+    {
+        return !$this->paid_at && !$this->closed;
+    }
 }

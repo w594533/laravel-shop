@@ -6,14 +6,15 @@ use Illuminate\Http\Request;
 use App\Exceptions\InvalidRequestException;
 use App\Models\Order;
 use Carbon\Carbon;
+use App\Events\OrderPaid;
 
 class PaymentController extends Controller
 {
-    public function alipay(Order $order, Request $request)
+    public function payByAlipay(Order $order, Request $request)
     {
         // 判断订单是否属于当前用户
         $this->authorize('own', $order);
-        if ($order->paid_at || $order->closed) {
+        if (!$order->canPay()) {
             //已经支付
             return redirect()->route('orders.show', ['order' => $order])->with('订单状态不正确');
         }
@@ -25,22 +26,44 @@ class PaymentController extends Controller
         ]);
     }
 
+    public function payByWechat(Order $order, Request $request)
+    {
+        // 判断订单是否属于当前用户
+        $this->authorize('own', $order);
+        if (!$order->canPay()) {
+            //已经支付
+            return redirect()->route('orders.show', ['order' => $order])->with('订单状态不正确');
+        }
+        $wechatOrder = app('wechat_pay')->scan([
+          'out_trade_no' => $order->no,
+          'total_fee' => $order->total_amount * 100,//单位 分
+          'body' => '微信支付 - '.$order->no,
+          'openid' => 'onkVf1FjWS5SBIixxxxxxx'
+        ]);
+        // 把要转换的字符串作为 QrCode 的构造函数参数
+        $qrCode = new QrCode($wechatOrder->code_url);
+
+        // 将生成的二维码图片数据以字符串形式输出，并带上相应的响应类型
+        return response($qrCode->writeString(), 200, ['Content-Type' => $qrCode->getContentType()]);
+    }
+
     //前端回调
-    public function return()
+    public function alipayReturn()
     {
         try {
             $data = app('alipay')->verify();
+            \Log::debug('alipay return', $data->all());
         } catch (\Exception $e) {
             return view('pages.error', ['msg' => '数据不正确']);
         }
 
         $order = Order::where('no', $data->out_trade_no)->first();
-        return redirect()->route('orders.show', ['order' => $order])->with('success', '支付成功');
+        return redirect()->route('orders.show', ['order' => $order->id])->with('success', '支付成功');
     }
 
 
     //服务端回调
-    public function notify()
+    public function alipayNotify()
     {
         $alipay = app('alipay');
         try {
@@ -71,9 +94,45 @@ class PaymentController extends Controller
               'payment_method' => 'alipay', // 支付方式
               'payment_no'     => $data->trade_no, // 支付宝订单号
             ]);
+            $this->afterPaid($order);
             return $alipay->success();
         } catch (Exception $e) {
             return 'fail';
         }
+    }
+
+    public function wechatPayNotify()
+    {
+        $wechat_pay = app('wechat_pay');
+        try {
+            $data = $wechat_pay->verify(); // 是的，验签就这么简单！
+            // 正常来说不太可能出现支付了一笔不存在的订单，这个判断只是加强系统健壮性。
+            $order = Order::where('no', $data->out_trade_no)->first();
+            if (!$order) {
+                return 'fail';
+            }
+            // 如果这笔订单的状态已经是已支付
+            if ($order->paid_at) {
+                return $wechat_pay->success();
+            }
+            //更新支付状态
+            $order->update([
+              'paid_at'        => Carbon::now(), // 支付时间
+              'payment_method' => 'wechat', // 支付方式
+              'payment_no'     => $wechat_pay->transaction_id, // 支付宝订单号
+            ]);
+            $this->afterPaid($order);
+            return $wechat_pay->success();
+        } catch (Exception $e) {
+            // $e->getMessage();
+            return 'fail';
+        }
+
+        return $wechat_pay->success();// laravel 框架中请直接 `return $pay->success()`
+    }
+
+    private function afterPaid(Order $order)
+    {
+        event(new OrderPaid($order));
     }
 }
