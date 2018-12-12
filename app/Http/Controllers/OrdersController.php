@@ -13,6 +13,8 @@ use App\Models\Product;
 use App\Models\UserAddress;
 use Carbon\Carbon;
 use App\Jobs\ColseOrder;
+use App\Http\Requests\OrderReviewRequest;
+use App\Events\OrderReviewed;
 
 class OrdersController extends Controller
 {
@@ -44,5 +46,40 @@ class OrdersController extends Controller
         $this->authorize('own', $order);
         $order->update(['ship_status' => Order::SHIP_STATUS_RECEIVED]);
         return $order;
+    }
+
+    public function review(Order $order)
+    {
+        $this->authorize('own', $order);
+        if (!$order->paid_at) {
+            throw new InvalidRequestException('订单未支付');
+        }
+        return view('orders.review', ['order'=>$order]);
+    }
+
+    public function sendReview(Order $order, OrderReviewRequest $request)
+    {
+        if (!$order->paid_at) {
+            throw new InvalidRequestException('订单未支付');
+        }
+
+        if ($order->reviewed) {
+            throw new InvalidRequestException("订单已评价");
+        }
+
+        $reviews = $request->reviews;
+        \DB::transaction(function () use ($reviews, $order) {
+            foreach ($reviews as $key => $review) {
+                OrderItem::where('id', $review['id'])->update([
+                  'rating' => intval($review['rating']),
+                  'review' => $review['review'],
+                  'reviewed_at' => Carbon::now()
+                ]);
+            }
+            $order->update(['reviewed' => true]);
+            event(new OrderReviewed($order));
+        });
+
+        return redirect()->back();
     }
 }

@@ -46,7 +46,10 @@
                   @if($index === 0)
                   <td rowspan="{{ count($order->items) }}" class=" text-center">{{ $order->total_amount }}</td>
                   <td rowspan="{{ count($order->items) }}" class=" text-center">{!! $order->showStatus() !!}</td>
-                  <td rowspan="{{ count($order->items) }}" class=" text-center"><a class="btn btn-primary btn-xs" href="{{ route('orders.show', ['id' => $order]) }}">查看订单</a></td>
+                  <td rowspan="{{ count($order->items) }}" class=" text-center">
+                    <a class="btn btn-primary btn-xs" href="{{ route('orders.show', ['id' => $order]) }}">查看订单</a>
+                    <a class="btn btn-primary btn-xs" href="{{ route('orders.review.show', ['id' => $order]) }}">{{ $order->reviewed ? '查看评价':'评价' }}</a>
+                  </td>
                   @endif
                 </tr>
                 @endforeach
