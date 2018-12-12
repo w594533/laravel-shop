@@ -9,6 +9,10 @@ use Encore\Admin\Form;
 use Encore\Admin\Grid;
 use Encore\Admin\Layout\Content;
 use Encore\Admin\Show;
+use Encore\Admin\Widgets\Form as CustomForm;
+use Encore\Admin\Widgets\Box;
+use Illuminate\Http\Request;
+use App\Exceptions\InvalidRequestException;
 
 class OrdersController extends Controller
 {
@@ -23,8 +27,8 @@ class OrdersController extends Controller
     public function index(Content $content)
     {
         return $content
-            ->header('Index')
-            ->description('description')
+            ->header('订单列表')
+            // ->description('description')
             ->body($this->grid());
     }
 
@@ -37,10 +41,55 @@ class OrdersController extends Controller
      */
     public function show($id, Content $content)
     {
-        return $content
-            ->header('Detail')
-            ->description('description')
+        $content
+            ->header('订单详情')
+            // ->description('')
             ->body($this->detail($id));
+
+        $order = Order::findOrFail($id);
+        //发货
+        if ($order->paid_at && $order->ship_status === Order::SHIP_STATUS_PENDING) {
+            $content->body($this->shipForm($id));
+        }
+        return $content;
+    }
+
+    public function ship(Order $order, Request $request)
+    {
+        // 判断当前订单是否已支付
+        if (!$order->paid_at) {
+            throw new InvalidRequestException('该订单未付款');
+        }
+        // 判断当前订单发货状态是否为未发货
+        if ($order->ship_status !== Order::SHIP_STATUS_PENDING) {
+            throw new InvalidRequestException('该订单已发货');
+        }
+        // Laravel 5.5 之后 validate 方法可以返回校验过的值
+        $data = $this->validate($request, [
+          'express_company' => ['required'],
+          'express_no'      => ['required'],
+        ], [], [
+            'express_company' => '物流公司',
+            'express_no'      => '物流单号',
+        ]);
+
+        $order->update(['ship_status' => Order::SHIP_STATUS_DELIVERED, 'ship_data'=> $data]);
+        // 返回上一页
+        admin_success("success", "发货成功");
+        return redirect()->back();
+    }
+
+    public function shipForm($id)
+    {
+        $form = new CustomForm();
+        $form->disablePjax();
+        $form->disableReset();
+        $form->action(route('admin.orders.ship', [$id]));
+        $form->text('express_company', '物流公司');
+        $form->text('express_no', '物流编号');
+        $box = new Box('发货设置', $form->render());
+        $box->style('info');
+        return $box;
     }
 
     /**
@@ -80,7 +129,7 @@ class OrdersController extends Controller
     protected function grid()
     {
         $grid = new Grid(new Order);
-
+        $grid->model()->orderBy('paid_at', 'desc');
         // $grid->id('Id');
         $grid->no('订单流水号');
         $grid->column('user.name', '买家');
@@ -127,7 +176,8 @@ class OrdersController extends Controller
      */
     protected function detail($id)
     {
-        $show = new Show(Order::findOrFail($id));
+        $order = Order::findOrFail($id);
+        $show = new Show($order);
         $show->no('订单流水号');
 
         $show->address('收货地址')->as(function ($value) {
@@ -154,6 +204,13 @@ class OrdersController extends Controller
         // $show->extra('Extra');
         // $show->created_at('Created at');
         // $show->updated_at('Updated at');
+        $show->ship('物流', function ($show) {
+            $form = new Form();
+            $form->email('email')->default('qwe@aweq.com');
+            $form->password('password');
+            $form->text('name', '输入框');
+            return $form->render();
+        });
         $show->user('买家', function ($user) {
             // $user->setResource('/admin/users');
             $user->name('姓名');
