@@ -53,6 +53,16 @@
                 <span class="pull-left">订单编号:</span>
                 <span class="pull-right">{{ $order->no }}</span>
               </li>
+              @if($order->paid_at && $order->ship_status !== \App\Models\Order::SHIP_STATUS_PENDING)
+                <li class="clearfix">
+                  <span class="pull-left">物流状态:</span>
+                  <span class="pull-right">{{ \App\Models\Order::$shipStatusMap[$order->ship_status] }}</span>
+                </li>
+                <li class="clearfix">
+                  <span class="pull-left">物流信息:</span>
+                  <span class="pull-right">{{ implode(" ", $order->ship_data) }}</span>
+                </li>
+                @endif
             </ul>
           </div>
           <div class="order-summary pull-right">
@@ -74,7 +84,11 @@
                 </li>
                 @endif
                 <!-- 支付按钮结束 -->
-
+                @if($order->paid_at && $order->ship_status === \App\Models\Order::SHIP_STATUS_DELIVERED)
+                  <li class="payment-buttons clearfix">
+                    <button class="btn btn-sm btn-success pull-right" id='btn-received'>确认收货</button>
+                  </li>
+                  @endif
             </ul>
           </div>
         </div>
@@ -101,6 +115,30 @@
             location.reload();
           }
         })
+    });
+
+    $('#btn-received').click(function() {
+      var received_route = "{{ route('orders.received', [$order->id]) }}";
+      // 弹出确认框
+      swal({
+          title: "确认已经收到商品？",
+          icon: "warning",
+          buttons: true,
+          dangerMode: true,
+          buttons: ['取消', '确认收到'],
+        })
+        .then(function(ret) {
+          // 如果点击取消按钮则不做任何操作
+          if (!ret) {
+            return;
+          }
+          // ajax 提交确认操作
+          axios.post(received_route)
+            .then(function() {
+              // 刷新页面
+              location.reload();
+            })
+        });
     });
   });
 </script>

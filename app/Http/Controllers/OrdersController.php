@@ -38,4 +38,11 @@ class OrdersController extends Controller
         $order = $this->orderService->store($user_address, $request->items, $request->remark);
         return $order;
     }
+
+    public function received(Order $order)
+    {
+        $this->authorize('own', $order);
+        $order->update(['ship_status' => Order::SHIP_STATUS_RECEIVED]);
+        return $order;
+    }
 }
