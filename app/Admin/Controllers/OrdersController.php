@@ -83,11 +83,11 @@ class OrdersController extends Controller
 
         // $grid->id('Id');
         $grid->no('订单流水号');
-        $grid->user_id('买家');
+        $grid->column('user.name', '买家');
         // $grid->address('Address');
-        $grid->total_amount('总金额');
+        $grid->total_amount('总金额')->sortable();
         // $grid->remark('Remark');
-        $grid->paid_at('支付时间');
+        $grid->paid_at('支付时间')->sortable();
         // $grid->payment_method('Payment method');
         // $grid->payment_no('Payment no');
         $grid->refund_status('退款状态')->display(function ($value) {
@@ -107,7 +107,7 @@ class OrdersController extends Controller
         $grid->disableCreateButton();
         $grid->actions(function ($actions) {
             $actions->disableDelete();
-            $actions->disableView();
+            // $actions->disableView();
             $actions->disableEdit();
         });
 
@@ -128,26 +128,48 @@ class OrdersController extends Controller
     protected function detail($id)
     {
         $show = new Show(Order::findOrFail($id));
+        $show->no('订单流水号');
 
-        $show->id('Id');
-        $show->no('No');
-        $show->user_id('User id');
-        $show->address('Address');
-        $show->total_amount('Total amount');
-        $show->remark('Remark');
-        $show->paid_at('Paid at');
-        $show->payment_method('Payment method');
-        $show->payment_no('Payment no');
-        $show->refund_status('Refund status');
-        $show->refund_no('Refund no');
-        $show->closed('Closed');
-        $show->reviewed('Reviewed');
-        $show->ship_status('Ship status');
-        $show->ship_data('Ship data');
-        $show->extra('Extra');
-        $show->created_at('Created at');
-        $show->updated_at('Updated at');
+        $show->address('收货地址')->as(function ($value) {
+            return implode(" ", $value);
+        });
+        $show->total_amount('总金额');
 
+        $show->paid_at('支付时间');
+        $show->payment_method('支付方式');
+        $show->payment_no('支付流水号');
+        $show->refund_status('退款状态')->as(function ($value) {
+            return Order::$refundStatusMap[$value];
+        });
+        $show->refund_no('退款流水号');
+        // $show->closed('Closed');
+        // $show->reviewed('Reviewed');
+        $show->ship_status('物流状态')->as(function ($value) {
+            return Order::$shipStatusMap[$value];
+        });
+        $show->ship_data('物流信息')->as(function ($value) {
+            return $value ? implode(" ", $value):'';
+        });
+        $show->remark('备注');
+        // $show->extra('Extra');
+        // $show->created_at('Created at');
+        // $show->updated_at('Updated at');
+        $show->user('买家', function ($user) {
+            // $user->setResource('/admin/users');
+            $user->name('姓名');
+            $user->panel()
+                ->tools(function ($tools) {
+                    $tools->disableEdit();
+                    $tools->disableList();
+                    $tools->disableDelete();
+                });
+        });
+        $show->panel()
+            ->tools(function ($tools) {
+                $tools->disableEdit();
+                // $tools->disableList();
+                $tools->disableDelete();
+            });
         return $show;
     }
 
