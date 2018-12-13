@@ -59,6 +59,7 @@ class OrdersController extends Controller
         return $content;
     }
 
+    //发货
     public function ship(Order $order, Request $request)
     {
         // 判断当前订单是否已支付
@@ -71,14 +72,14 @@ class OrdersController extends Controller
         }
         // Laravel 5.5 之后 validate 方法可以返回校验过的值
         $data = $this->validate($request, [
-          'express_company' => ['required'],
-          'express_no'      => ['required'],
+            'express_company' => ['required'],
+            'express_no' => ['required'],
         ], [], [
             'express_company' => '物流公司',
-            'express_no'      => '物流单号',
+            'express_no' => '物流单号',
         ]);
 
-        $order->update(['ship_status' => Order::SHIP_STATUS_DELIVERED, 'ship_data'=> $data]);
+        $order->update(['ship_status' => Order::SHIP_STATUS_DELIVERED, 'ship_data' => $data]);
         // 返回上一页
         admin_success("success", "发货成功");
         return redirect()->back();
@@ -97,6 +98,7 @@ class OrdersController extends Controller
         return $box;
     }
 
+    //退款
     public function refund(Order $order, Request $request)
     {
         if ($order->refund_status !== Order::REFUND_STATUS_APPLIED) {
@@ -109,7 +111,7 @@ class OrdersController extends Controller
             return $request->agree;
         });
 
-        $extra = $order->extra?:[];
+        $extra = $order->extra ? : [];
         if ($request->input('agree')) {
             //开始处理退款
             $result = $this->_refundOrder($order);
@@ -123,13 +125,13 @@ class OrdersController extends Controller
             $refund_status = Order::REFUND_STATUS_PENDING;
             $extra['refund_disagree_reason'] = $request->input('refund_disagree_reason');
             $order->update([
-                'refund_status' => $refund_status, 
+                'refund_status' => $refund_status,
                 'extra' => $extra
             ]);
             admin_success('success', '退款处理成功');
             return redirect()->back();
         }
-        
+
     }
 
     public function dealRefundForm($id)
@@ -138,7 +140,7 @@ class OrdersController extends Controller
         $form->disablePjax();
         $form->disableReset();
         $form->action(route('admin.orders.refund', [$id]));
-        $form->radio('agree','处理结果')->options([true=>'同意', false=>'拒绝'])->default(true);
+        $form->radio('agree', '处理结果')->options([true => '同意', false => '拒绝'])->default(true);
         $form->text('refund_disagree_reason', '拒绝理由');
         $box = new Box('退款处理', $form->render());
         $box->style('info');
@@ -183,33 +185,20 @@ class OrdersController extends Controller
     {
         $grid = new Grid(new Order);
         $grid->model()->orderBy('paid_at', 'desc');
-        // $grid->id('Id');
         $grid->no('订单流水号');
         $grid->column('user.name', '买家');
-        // $grid->address('Address');
         $grid->total_amount('总金额')->sortable();
-        // $grid->remark('Remark');
         $grid->paid_at('支付时间')->sortable();
-        // $grid->payment_method('Payment method');
-        // $grid->payment_no('Payment no');
         $grid->refund_status('退款状态')->display(function ($value) {
             return Order::$refundStatusMap[$value];
         });
-        // $grid->refund_no('Refund no');
-        // $grid->closed('Closed');
-        // $grid->reviewed('Reviewed');
         $grid->ship_status('物流状态')->display(function ($value) {
             return Order::$shipStatusMap[$value];
         });
-        // $grid->ship_data('Ship data');
-        // $grid->extra('Extra');
-        // $grid->created_at('Created at');
-        // $grid->updated_at('Updated at');
 
         $grid->disableCreateButton();
         $grid->actions(function ($actions) {
             $actions->disableDelete();
-            // $actions->disableView();
             $actions->disableEdit();
         });
 
@@ -237,7 +226,6 @@ class OrdersController extends Controller
             return implode(" ", $value);
         });
         $show->total_amount('总金额');
-
         $show->paid_at('支付时间');
         $show->payment_method('支付方式');
         $show->payment_no('支付流水号');
@@ -245,18 +233,13 @@ class OrdersController extends Controller
             return Order::$refundStatusMap[$value];
         });
         $show->refund_no('退款流水号');
-        // $show->closed('Closed');
-        // $show->reviewed('Reviewed');
         $show->ship_status('物流状态')->as(function ($value) {
             return Order::$shipStatusMap[$value];
         });
         $show->ship_data('物流信息')->as(function ($value) {
-            return $value ? implode(" ", $value):'';
+            return $value ? implode(" ", $value) : '';
         });
         $show->remark('备注');
-        // $show->extra('Extra');
-        // $show->created_at('Created at');
-        // $show->updated_at('Updated at');
         $show->ship('物流', function ($show) {
             $form = new Form();
             $form->email('email')->default('qwe@aweq.com');
@@ -265,7 +248,6 @@ class OrdersController extends Controller
             return $form->render();
         });
         $show->user('买家', function ($user) {
-            // $user->setResource('/admin/users');
             $user->name('姓名');
             $user->panel()
                 ->tools(function ($tools) {
@@ -277,7 +259,6 @@ class OrdersController extends Controller
         $show->panel()
             ->tools(function ($tools) {
                 $tools->disableEdit();
-                // $tools->disableList();
                 $tools->disableDelete();
             });
         return $show;
@@ -311,11 +292,12 @@ class OrdersController extends Controller
         return $form;
     }
 
-    private function _refundOrder(Order $order) {
+    private function _refundOrder(Order $order)
+    {
         if ($order->payment_method === 'wechat_pay') {
             //todo
             return true;
-        } else if($order->payment_method === 'alipay') {
+        } else if ($order->payment_method === 'alipay') {
             $refund_no = Order::findAvailableRefundNo();
             $result = app('alipay')->refund([
                 'out_trade_no' => $order->no, // 之前的订单流水号

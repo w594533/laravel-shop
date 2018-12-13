@@ -22,7 +22,7 @@ class PaymentController extends Controller
         return app('alipay')->web([
             'out_trade_no' => $order->no,
             'total_amount' => '1',//$order->total_amount
-            'subject' => '支付宝支付 - '.$order->no,
+            'subject' => '支付宝支付 - ' . $order->no,
         ]);
     }
 
@@ -35,10 +35,10 @@ class PaymentController extends Controller
             return redirect()->route('orders.show', ['order' => $order])->with('订单状态不正确');
         }
         $wechatOrder = app('wechat_pay')->scan([
-          'out_trade_no' => $order->no,
-          'total_fee' => $order->total_amount * 100,//单位 分
-          'body' => '微信支付 - '.$order->no,
-          'openid' => 'onkVf1FjWS5SBIixxxxxxx'
+            'out_trade_no' => $order->no,
+            'total_fee' => $order->total_amount * 100,//单位 分
+            'body' => '微信支付 - ' . $order->no,
+            'openid' => 'onkVf1FjWS5SBIixxxxxxx'
         ]);
         // 把要转换的字符串作为 QrCode 的构造函数参数
         $qrCode = new QrCode($wechatOrder->code_url);
@@ -90,9 +90,9 @@ class PaymentController extends Controller
             }
             //更新支付状态
             $order->update([
-              'paid_at'        => Carbon::now(), // 支付时间
-              'payment_method' => 'alipay', // 支付方式
-              'payment_no'     => $data->trade_no, // 支付宝订单号
+                'paid_at' => Carbon::now(), // 支付时间
+                'payment_method' => 'alipay', // 支付方式
+                'payment_no' => $data->trade_no, // 支付宝订单号
             ]);
             $this->afterPaid($order);
             return $alipay->success();
@@ -117,9 +117,9 @@ class PaymentController extends Controller
             }
             //更新支付状态
             $order->update([
-              'paid_at'        => Carbon::now(), // 支付时间
-              'payment_method' => 'wechat', // 支付方式
-              'payment_no'     => $wechat_pay->transaction_id, // 支付宝订单号
+                'paid_at' => Carbon::now(), // 支付时间
+                'payment_method' => 'wechat', // 支付方式
+                'payment_no' => $wechat_pay->transaction_id, // 支付宝订单号
             ]);
             $this->afterPaid($order);
             return $wechat_pay->success();
