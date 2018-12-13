@@ -42,6 +42,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('orders/{order}/review', 'OrdersController@review')->name('orders.review.show');
     Route::post('orders/{order}/sendReview', 'OrdersController@sendReview')->name('orders.review.store');
 
+    Route::post("orders/{order}/sendRefund", 'OrdersController@sendRefund')->name('orders.refund.store');
+
     Route::get('/payment/{order}/alipay', 'PaymentController@payByAlipay')->name('payment.alipay');
     Route::get('/payment/{order}/wechat', 'PaymentController@payByWechat')->name('payment.wechat');
     Route::group(['middleware' => 'emailVerify'], function () {

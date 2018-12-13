@@ -14,6 +14,7 @@ use App\Models\UserAddress;
 use Carbon\Carbon;
 use App\Jobs\ColseOrder;
 use App\Http\Requests\OrderReviewRequest;
+use App\Http\Requests\ApplyRefundRequest;
 use App\Events\OrderReviewed;
 
 class OrdersController extends Controller
@@ -81,5 +82,22 @@ class OrdersController extends Controller
         });
 
         return redirect()->back();
+    }
+
+    public function sendRefund(Order $order, ApplyRefundRequest $request)
+    {
+        if (!$order->paid_at) {
+            throw new InvalidRequestException('订单未支付');
+        }
+
+        if ($order->refund_status !== Order::REFUND_STATUS_PENDING) {
+            throw new InvalidRequestException('该订单已经申请过退款，请勿重复申请');
+        }
+
+        $extra = $order->extra ?: []; 
+        $extra['refund_reason'] = $request->reason;
+        
+        $order->update(['extra'=>$extra, 'refund_status' => Order::REFUND_STATUS_APPLIED]);
+        return $order;
     }
 }

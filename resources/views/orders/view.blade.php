@@ -63,6 +63,17 @@
                   <span class="pull-right">{{ $order->ship_data ? implode(" ", $order->ship_data) : '' }}</span>
                 </li>
                 @endif
+                 <!-- 订单已支付，且退款状态不是未退款时展示退款信息 -->
+                @if($order->paid_at && $order->refund_status !== \App\Models\Order::REFUND_STATUS_PENDING)
+                <li class="line">
+                  <div class="pull-left">退款状态：</div>
+                  <div class="pull-right">{{ \App\Models\Order::$refundStatusMap[$order->refund_status] }}</div>
+                </li>
+                <li class="line">
+                  <div class="pull-left">退款理由：</div>
+                  <div class="pull-right">{{ $order->extra['refund_reason'] }}</div>
+                </li>
+                @endif
             </ul>
           </div>
           <div class="order-summary pull-right">
@@ -88,7 +99,13 @@
                   <li class="payment-buttons clearfix">
                     <button class="btn btn-sm btn-success pull-right" id='btn-received'>确认收货</button>
                   </li>
-                  @endif
+                @endif
+                <!-- 订单已支付，且退款状态是未退款时展示申请退款按钮 -->
+        @if($order->paid_at && $order->refund_status === \App\Models\Order::REFUND_STATUS_PENDING)
+        <li class="refund-button">
+          <button class="btn btn-sm btn-danger pull-right" id="btn-apply-refund">申请退款</button>
+        </li>
+        @endif
             </ul>
           </div>
         </div>
@@ -139,6 +156,28 @@
               location.reload();
             })
         });
+    });
+
+    // 退款按钮点击事件
+    $('#btn-apply-refund').click(function () {
+      swal({
+        text: '请输入退款理由',
+        content: "input",
+      }).then(function (input) {
+        // 当用户点击 swal 弹出框上的按钮时触发这个函数
+        if(!input) {
+          swal('退款理由不可空', '', 'error');
+          return;
+        }
+        // 请求退款接口
+        axios.post('{{ route('orders.refund.store', [$order->id]) }}', {reason: input})
+          .then(function () {
+            swal('申请退款成功', '', 'success').then(function () {
+              // 用户点击弹框上按钮时重新加载页面
+              location.reload();
+            });
+          });
+      });
     });
   });
 </script>
