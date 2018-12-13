@@ -12,6 +12,7 @@ use Encore\Admin\Show;
 use Encore\Admin\Widgets\Form as CustomForm;
 use Encore\Admin\Widgets\Box;
 use Illuminate\Http\Request;
+use Validator;
 use App\Exceptions\InvalidRequestException;
 
 class OrdersController extends Controller
@@ -51,6 +52,10 @@ class OrdersController extends Controller
         if ($order->paid_at && $order->ship_status === Order::SHIP_STATUS_PENDING) {
             $content->body($this->shipForm($id));
         }
+        //处理退款
+        if ($order->refund_status === Order::REFUND_STATUS_APPLIED) {
+            $content->body($this->dealRefundForm($id));
+        }
         return $content;
     }
 
@@ -88,6 +93,47 @@ class OrdersController extends Controller
         $form->text('express_company', '物流公司');
         $form->text('express_no', '物流编号');
         $box = new Box('发货设置', $form->render());
+        $box->style('info');
+        return $box;
+    }
+
+    public function refund(Order $order, Request $request)
+    {
+        if ($order->refund_status !== Order::REFUND_STATUS_APPLIED) {
+            throw new InvalidRequestException('退款状态错误');
+        }
+        $v = Validator::make($request->all(), [
+            'agree' => 'required'
+        ]);
+        $v->sometimes('refund_disagree_reason', 'required|max:500', function ($request) {
+            return $request->agree;
+        });
+
+        $extra = $order->extra?:[];
+        if ($request->input('agree')) {
+            $refund_status = Order::REFUND_STATUS_SUCCESS;
+
+        } else {
+            $refund_status = Order::REFUND_STATUS_PENDING;
+            $extra['refund_disagree_reason'] = $request->input('refund_disagree_reason');
+        }
+        $order->update([
+            'refund_status' => $refund_status, 
+            'extra' => $extra
+        ]);
+        admin_success('success', '退款处理成功');
+        return redirect()->back();
+    }
+
+    public function dealRefundForm($id)
+    {
+        $form = new CustomForm();
+        $form->disablePjax();
+        $form->disableReset();
+        $form->action(route('admin.orders.refund', [$id]));
+        $form->radio('agree','处理结果')->options([true=>'同意', false=>'拒绝'])->default(true);
+        $form->text('refund_disagree_reason', '拒绝理由');
+        $box = new Box('退款处理', $form->render());
         $box->style('info');
         return $box;
     }
