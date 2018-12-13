@@ -53,14 +53,14 @@
                 <span class="pull-left">订单编号:</span>
                 <span class="pull-right">{{ $order->no }}</span>
               </li>
-              @if($order->paid_at && $order->ship_status !== \App\Models\Order::SHIP_STATUS_PENDING)
+              @if($order->paid_at)
                 <li class="clearfix">
                   <span class="pull-left">物流状态:</span>
                   <span class="pull-right">{{ \App\Models\Order::$shipStatusMap[$order->ship_status] }}</span>
                 </li>
                 <li class="clearfix">
                   <span class="pull-left">物流信息:</span>
-                  <span class="pull-right">{{ implode(" ", $order->ship_data) }}</span>
+                  <span class="pull-right">{{ $order->ship_data ? implode(" ", $order->ship_data) : '' }}</span>
                 </li>
                 @endif
             </ul>

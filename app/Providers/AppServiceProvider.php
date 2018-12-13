@@ -42,7 +42,7 @@ class AppServiceProvider extends ServiceProvider
             if (app()->environment() !== 'production') {
                 $config['mode'] = 'dev';
                 $config['log']['level'] = Logger::DEBUG;
-                $config['notify_url'] = 'http://requestbin.leo108.com/v1vjf9v1';
+                $config['notify_url'] = 'http://requestbin.leo108.com/1jaufje1';
             } else {
                 $config['log']['level'] = Logger::WARNING;
             }

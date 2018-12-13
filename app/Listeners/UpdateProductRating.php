@@ -28,17 +28,17 @@ class UpdateProductRating implements ShouldQueue
      */
     public function handle(OrderReviewed $event)
     {
-        $items = $event->getOrder()->items()->with(['product'])->get();
+        $items = $event->getOrder()->items()->select(DB::raw('product_id'))->groupBy('product_id')->with(['product'])->get();
         foreach ($items as $key => $item) {
             $result = OrderItem::query()
-            ->where('product_id', $item->product_id)
-            ->whereHas('order', function ($query) {
-                $query->whereNotNull('paid_at');
-            })
-            ->first([
-              DB::raw('count(*) as review_count'),
-              DB::raw('avg(rating) as rating')
-            ]);
+                        ->where('product_id', $item->product_id)
+                        ->whereHas('order', function($query) {
+                            $query->whereNotNull('paid_at');
+                        })
+                        ->first([
+                            DB::raw('count(*) as review_count'),
+                            DB::raw('avg(rating) as rating')
+                        ]);
 
             //更新商品的评分和评价数
             $item->product->update([

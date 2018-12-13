@@ -49,6 +49,30 @@
               {!! $product->description !!}
             </div>
             <div role="tabpanel" class="tab-pane" id="product-reviews-tab">
+                <table class="table">
+                    <thead>
+                      <tr>
+                        <td>用户</td>
+                        <td>商品名称</td>
+                        <td>打分</td>
+                        <td>评价</td>
+                        <td>时间</td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @foreach ($reviews as $index => $review)
+                      <tr>
+                        <td class="product-info">{{ $review->order->user->name }}</td>
+                      <td>{{$review->productSku->title}}</td>
+                        <td class="vertical-middle">
+                            <span class="rating-star-yes">{{ str_repeat('★', $review->rating) }}</span><span class="rating-star-no">{{ str_repeat('☆', 5 - $review->rating) }}</span>
+                        </td>
+                      <td>{{$review->review}}</td>
+                      <td>{{$review->reviewed_at}}</td>
+                      </tr>
+                      @endforeach
+                    </tbody>
+                </table>
             </div>
           </div>
         </div>
