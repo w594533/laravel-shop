@@ -90,8 +90,8 @@ class OrdersController extends Controller
             throw new InvalidRequestException('订单未支付');
         }
 
-        if ($order->refund_status !== Order::REFUND_STATUS_PENDING) {
-            throw new InvalidRequestException('该订单已经申请过退款，请勿重复申请');
+        if ($order->canRefund()) {
+            throw new InvalidRequestException('退款状态错误');
         }
 
         $extra = $order->extra ?: []; 

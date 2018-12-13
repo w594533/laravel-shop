@@ -85,8 +85,21 @@ class Order extends Model
         return $no;
     }
 
+    public static function findAvailableRefundNo()
+    {
+        $prefix = date('YmdHis');
+        do{
+            $no = generateNo();
+        }while(static::query()->where('refund_no', $no)->exists());
+        return $no;
+    }
+
     public function canPay()
     {
         return !$this->paid_at && !$this->closed;
+    }
+
+    public function canRefund(){
+        return $this->refund_status === self::REFUND_STATUS_PENDING || $this->refund_status === self::REFUND_STATUS_FAILED;
     }
 }

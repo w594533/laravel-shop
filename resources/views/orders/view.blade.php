@@ -101,17 +101,17 @@
                   </li>
                 @endif
                 @if(isset($order->extra['refund_disagree_reason']))
-        <li class="clearfix">
-          <span class="pull-left">拒绝退款理由：</span>
-          <div class="value pull-right">{{ $order->extra['refund_disagree_reason'] }}</div>
-        </li>
-        @endif
+                  <li class="clearfix">
+                    <span class="pull-left">拒绝退款理由：</span>
+                    <div class="value pull-right">{{ $order->extra['refund_disagree_reason'] }}</div>
+                  </li>
+                @endif
                 <!-- 订单已支付，且退款状态是未退款时展示申请退款按钮 -->
-        @if($order->paid_at && $order->refund_status === \App\Models\Order::REFUND_STATUS_PENDING)
-        <li class="clearfix refund-button">
-          <button class="btn btn-sm btn-danger pull-right" id="btn-apply-refund">申请退款</button>
-        </li>
-        @endif
+                @if($order->paid_at && $order->canRefund())
+                <li class="clearfix refund-button">
+                  <button class="btn btn-sm btn-danger pull-right" id="btn-apply-refund">申请退款</button>
+                </li>
+                @endif
             </ul>
           </div>
         </div>
