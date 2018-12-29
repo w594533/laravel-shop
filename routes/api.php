@@ -19,9 +19,21 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 $api = app('Dingo\Api\Routing\Router');
 
-$api->version('v1', function($api){
-    $api->get('version',function(){
+$api->version('v1',['namespace' => 'App\Http\Controllers\Api'], function($api){
+    $api->get('version', function(){
         return response('this is version1');
+    });
+
+    $api->post('verfycode', 'VerfyCodeController@store')->name('api.verfycode.store');
+
+    $api->post('register', 'UserController@store')->name('api.user.store');
+    $api->post('login', 'UserController@login')->name('api.user.login');
+
+    $api->group(['middleware' => 'api.auth'], function($api){
+        $api->delete('logout', 'UserController@logout')->name('api.user.logout');
+        $api->get('test', function() {
+            return response('this is test');
+        });
     });
 });
 

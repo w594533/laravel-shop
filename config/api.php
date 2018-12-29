@@ -168,7 +168,7 @@ return [
     */
 
     'auth' => [
-
+        'oauth' => \App\Providers\PassportDingoProvider::class,
     ],
 
     /*
