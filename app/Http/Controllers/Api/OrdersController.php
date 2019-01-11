@@ -10,6 +10,7 @@ use App\Models\ProductSku;
 use App\Models\OrderItem;
 use App\Models\Order;
 use App\Models\CartItem;
+use App\Jobs\ColseOrder;
 
 class OrdersController extends Controller
 {
@@ -60,6 +61,8 @@ class OrdersController extends Controller
             //删除购物车
             $skuIds = collect($request->skus)->pluck('sku_id');
             $user->cartItems()->whereIn('product_sku_id', $skuIds)->delete();
+
+            ColseOrder::dispatch($order, config('app.order_ttl'));
         });
 
         return $this->response->noContent();
