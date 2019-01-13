@@ -78,10 +78,17 @@
           </div>
           <div class="order-summary pull-right">
             <ul>
+              
               <li class="clearfix">
                 <span class="pull-left"><strong>订单总价：</strong></span>
                 <span class="pull-right"><strong>{{ $order->total_amount }}</strong></span>
               </li>
+              @if ($order->couponCode)
+              <li class="clearfix">
+                <span class="pull-left">优惠：</span>
+                <span class="pull-right">{{ $order->couponCode->description }}</span>
+              </li>
+              @endif
               <li class="clearfix">
                 <span class="pull-left">订单状态：</span>
                 <span class="pull-right">{!! $order->showStatus() !!}</span>

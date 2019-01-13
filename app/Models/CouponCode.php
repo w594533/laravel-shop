@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Exceptions\CouponCodeUnavailableException;
+use App\Models\User;
 
 class CouponCode extends Model
 {
@@ -33,11 +34,26 @@ class CouponCode extends Model
         return $no;
     }
 
-    public function checkAvailable($orderAmount = null)
+    public function checkAvailable(User $user, $orderAmount = null)
     {
         // if (!$this->enabled) {
         //     throw new CouponCodeUnavailableException('优惠券不存在');
         // }
+        $used = Order::where('user_id', $user->id)
+                    ->where('coupon_code_id', $this->id)
+                    ->where(function($query) {
+                        return $query->where(function($query) {
+                            return $query->whereNull('paid_at')
+                                ->where('closed', false);
+                        })->orWhere(function($query) {
+                            return $query->whereNotNull('paid_at')
+                                    ->where('refund_status', '!=', Order::REFUND_STATUS_SUCCESS);
+                        });
+                    })->exists();
+        if ($used) {
+            throw new CouponCodeUnavailableException('已经使用过该优惠券');
+        }
+        
         if ($this->total - intval($this->used) <= 0) {
             throw new CouponCodeUnavailableException('该优惠券已被兑完');
         }
