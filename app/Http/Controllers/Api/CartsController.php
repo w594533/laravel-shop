@@ -19,7 +19,7 @@ class CartsController extends Controller
             $cart_item->save();
         } else {
             $cart_item = new CartItem(['amount' => $request->amount]);
-            $cart_item->user()->associate($user);
+            $cart_item->user()->associate($user->id);
             $cart_item->productSku()->associate($request->sku_id);
             $cart_item->save();
         }

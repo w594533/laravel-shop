@@ -121,11 +121,11 @@ return [
     |
     */
 
-    'log' => env('APP_LOG', 'single'),
+    // 'log' => env('APP_LOG', 'single'),
 
-    'log_level' => env('APP_LOG_LEVEL', 'debug'),
+    // 'log_level' => env('APP_LOG_LEVEL', 'debug'),
 
-    'order_ttl' => 30,//关闭订单时间 单位 秒
+    'order_ttl' => 1800,//关闭订单时间 单位 秒
 
     /*
     |--------------------------------------------------------------------------

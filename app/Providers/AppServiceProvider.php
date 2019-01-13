@@ -18,19 +18,19 @@ class AppServiceProvider extends ServiceProvider
         \App\Models\Order::observe(\App\Observers\OrderObserver::class);
 
         //打印sql执行记录
-        if (config('app.debug')) {
-            \DB::listen(function ($query) {
-                $sql = $query->sql;
-                $bindings = $query->bindings;
-                $time = $query->time;
-                //写入sql
-                if ($bindings) {
-                    \Log::info(date("Y-m-d H:i:s") . "]" . $sql . "\r\nparmars:" . json_encode($bindings, 320) . "\r\n\r\n");
-                } else {
-                    \Log::info("[" . date("Y-m-d H:i:s") . "]" . $sql . "\r\n\r\n");
-                }
-            });
-        }
+        // if (config('app.debug')) {
+        //     // \DB::listen(function ($query) {
+        //     //     $sql = $query->sql;
+        //     //     $bindings = $query->bindings;
+        //     //     $time = $query->time;
+        //     //     //写入sql
+        //     //     if ($bindings) {
+        //     //         \Log::info(date("Y-m-d H:i:s") . "]" . $sql . "\r\nparmars:" . json_encode($bindings, 320) . "\r\n\r\n");
+        //     //     } else {
+        //     //         \Log::info("[" . date("Y-m-d H:i:s") . "]" . $sql . "\r\n\r\n");
+        //     //     }
+        //     // });
+        // }
     }
 
     /**
