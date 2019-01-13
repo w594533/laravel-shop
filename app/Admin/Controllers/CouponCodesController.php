@@ -67,8 +67,8 @@ class CouponCodesController extends Controller
     public function create(Content $content)
     {
         return $content
-            ->header('Create')
-            ->description('description')
+            ->header('新增优惠券')
+            ->description('')
             ->body($this->form());
     }
 
@@ -80,6 +80,9 @@ class CouponCodesController extends Controller
     protected function grid()
     {
         $grid = new Grid(new CouponCode);
+
+        $grid->model()->orderBy('id', 'desc');
+
 
         $grid->id('Id');
         $grid->no('优惠码');
@@ -94,11 +97,15 @@ class CouponCodesController extends Controller
             return '满'.$this->amount.$str;
         });
         $grid->total('数量');
+        $grid->used('已使用');
         $grid->start_time('开始使用时间');
         $grid->end_time('结束使用时间');
         // $grid->created_at('Created at');
         // $grid->updated_at('Updated at');
 
+        $grid->actions(function ($actions) {
+            $actions->disableView();
+        });
         return $grid;
     }
 
@@ -135,26 +142,40 @@ class CouponCodesController extends Controller
     {
         $form = new Form(new CouponCode);
 
-        $form->text('no', '优惠码');
-        $form->radio('type', '类型')->options(['reduction'=>'满减', 'discount'=>'折扣'])->rules('required');
-        $form->decimal('amount', '金额')->default(0.00)->rules('required|numeric|min:0');
-        $form->decimal('offer', '优惠')->default(0.00)->rules(function($form) {
-            dd($form->model());
-            if ($form->model()->type === 'discount') {
-                 return 'required|numeric|betweent:1,99';
+
+        $form->text('no', '优惠码')->rules('nullable|unique:coupon_codes');
+        $form->radio('type', '类型')->options(['reduction'=>'固定金额', 'discount'=>'折扣'])->rules('required');
+        $form->decimal('amount', '最低使用金额')->default(0.00)->rules('required|numeric|min:0');
+        $form->decimal('offer', '折扣')->rules(function ($form) {
+            if (request()->input('type') === 'discount') {
+                // 如果选择了百分比折扣类型，那么折扣范围只能是 1 ~ 99
+                return 'required|numeric|between:1,99';
             } else {
-                 return 'required|numeric|min:0.01';
+                // 否则只要大等于 0.01 即可
+                return 'required|numeric|min:0.01';
             }
         });
         $form->number('total', '总数量')->default(1);
-        $form->datetime('start_time', '优惠开始时间')->default(date('Y-m-d H:i:s'));
-        $form->datetime('end_time', '优惠结束时间')->default(date('Y-m-d H:i:s'));
+        $form->datetime('start_time', '优惠开始时间');
+        $form->datetime('end_time', '优惠结束时间');
 
         $form->saving(function (Form $form) {
             if (!$form->no) {
                 $form->no = CouponCode::findAvalableNo();
             }
         });
+
+        $form->tools(function (Form\Tools $tools) {
+            // 去掉`查看`按钮
+            $tools->disableView();
+        });
+
+        $form->footer(function ($footer) {
+            // 去掉`查看`checkbox
+            $footer->disableViewCheck();
+        
+        });
+        
         return $form;
     }
 }

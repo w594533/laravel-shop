@@ -20,7 +20,7 @@ class CreateCouponCodesTable extends Migration
             $table->decimal('amount', 10, 2)->default(0);
             $table->decimal('offer', 10, 2)->default(0);
             $table->integer('total')->default(1)->comment('可供使用的数量');
-            $table->interget('used')->default(0)->comment('已使用');
+            $table->interget('used')->default(0)->default(0)->comment('已使用');
             $table->dateTime('start_time')->nullable();
             $table->dateTime('end_time')->nullable();
             $table->timestamps();
