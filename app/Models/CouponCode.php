@@ -76,10 +76,10 @@ class CouponCode extends Model
         // 固定金额
         if ($this->type === self::TYPE_FIXED) {
             // 为了保证系统健壮性，我们需要订单金额最少为 0.01 元
-            return max(0.01, $orderAmount - $this->value);
+            return max(0.01, $orderAmount - $this->offer);
         }
 
-        return number_format($orderAmount * (100 - $this->value) / 100, 2, '.', '');
+        return number_format($orderAmount * (100 - $this->offer) / 100, 2, '.', '');
     }
 
     public function changeUsed($increase = true)
