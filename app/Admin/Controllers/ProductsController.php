@@ -3,6 +3,7 @@
 namespace App\Admin\Controllers;
 
 use App\Models\Product;
+use App\Models\Category;
 use App\Http\Controllers\Controller;
 use Encore\Admin\Controllers\HasResourceActions;
 use Encore\Admin\Form;
@@ -83,6 +84,7 @@ class ProductsController extends Controller
         $grid->id('Id');
         $grid->title('名称');
         // $grid->description('描述');
+        $grid->with(['category']);
         $grid->image('图片')->display(function ($value) {
             return '<image src="'.$this->image_url.'" width="50"/>';
         });
@@ -93,6 +95,7 @@ class ProductsController extends Controller
         $grid->sold_count('销量');
         $grid->review_count('评论数');
         $grid->price('最低价格');
+        $grid->column('category.name', '类目');
         $grid->created_at('创建时间');
         // $grid->updated_at('Updated at');
 
@@ -154,7 +157,12 @@ class ProductsController extends Controller
 
         // 创建一组单选框
         $form->radio('on_sale', '上架')->options(['1' => '是', '0'=> '否'])->default('0');
-
+        $form->select('category_id', '类目')->options(function ($id) {
+            $category = Category::find($id);
+            if ($category) {
+                return [$category->id => $category->full_name];
+            }
+        })->ajax('/admin/api/categories?is_directory=0');
         // 直接添加一对多的关联模型
         $form->hasMany('skus', 'SKU 列表', function (Form\NestedForm $form) {
             $form->text('title', 'SKU 名称')->rules('required');
@@ -162,6 +170,8 @@ class ProductsController extends Controller
             $form->text('price', '单价')->rules('required|numeric|min:0.01');
             $form->text('stock', '剩余库存')->rules('required|integer|min:0');
         });
+
+        
 
         $form->saving(function (Form $form) {
             if ($form->input('skus')) {
