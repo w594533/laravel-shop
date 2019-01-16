@@ -20,7 +20,7 @@ class Category extends Model
             if (is_null($category->parent_id)) {
                 //没有父级
                 $category->level = 0;
-                $category->path = '_';
+                $category->path = '-';
             } else {
                 // 将层级设为父类目的层级 + 1
                 $category->level = $category->parent->level + 1;
