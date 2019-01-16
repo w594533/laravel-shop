@@ -384,6 +384,32 @@ body {
   }
 }
 
+.filter {
+  padding: 0px 15px;
+  .category-filter-bread {
+
+  }
+  .category-filter-child {
+    .filter-item {
+      .pull-left {
+        width: 5%;
+      }
+      .item {
+        width: 90%;
+        ul {
+          padding: 0px;
+          margin: 0px;
+          display: flex;
+          justify-content: space-between;
+        }
+        li {
+          list-style: none;
+        }
+      }
+    }
+  }
+}
+
 .footer {
     position: absolute;
     bottom: 0;

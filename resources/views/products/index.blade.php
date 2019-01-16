@@ -8,6 +8,28 @@
       <div class="panel-body">
         <!-- 筛选组件开始 -->
         <div class="row">
+          <div class="filter">
+            <div class="category-filter-bread">
+              <a href="#">全部</a>&gt;
+              <a href="#">耳机</a>&gt;
+              <span>蓝牙耳机</span>
+            </div>
+            <div class="category-filter-child">
+              <div class="filter-item clearfix">
+                <div class="pull-left">
+                  <span>分类：<span>
+                </div>
+                <div class="pull-right item">
+                  <ul class="clearfix">
+                      <li><a href="#">耳机</a></li>
+                      <li><a href="#">蓝牙耳机</a></li>
+                      <li><a href="#">华为耳机</a></li>
+                  </ul>
+                </div>
+              </div>
+              
+            </div>
+          </div>
           <form action="{{ route('products.index') }}" class="form-inline search-form">
             <input type="text" class="form-control input-sm" name="search" placeholder="搜索" value="{{ $filters['search'] }}">
             <button class="btn btn-primary btn-sm">搜索</button>
