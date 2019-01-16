@@ -19,4 +19,6 @@ Route::group([
     $router->post('orders/{order}/refund', 'OrdersController@refund')->name('admin.orders.refund');
     $router->resource('orders', 'OrdersController', ['only' => ['index', 'show']]);
     $router->resource('coupon_codes', 'CouponCodesController', ['except' => ['show']]);
+    $router->get('api/categories', 'CategoriesController@apiIndex');
+    $router->resource('categories', 'CategoriesController', ['except' => 'show']);
 });
