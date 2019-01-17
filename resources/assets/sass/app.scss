@@ -414,6 +414,13 @@ body {
   }
 }
 
+.category-tree {
+  margin: 0;
+  padding: 0;
+  li {
+    list-style: none;
+  }
+}
 .dropdown-submenu {
   position: relative;
 }

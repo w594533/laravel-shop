@@ -3,15 +3,16 @@
 namespace App\Admin\Controllers;
 
 use App\Models\Product;
-use App\Models\Category;
 use App\Http\Controllers\Controller;
 use Encore\Admin\Controllers\HasResourceActions;
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
 use Encore\Admin\Layout\Content;
 use Encore\Admin\Show;
+use App\Models\CrowdfundingProduct;
+use App\Models\Category;
 
-class ProductsController extends Controller
+class CrowdfundingProductsController extends Controller
 {
     use HasResourceActions;
 
@@ -24,7 +25,8 @@ class ProductsController extends Controller
     public function index(Content $content)
     {
         return $content
-            ->header('商品列表')
+            ->header('Index')
+            ->description('description')
             ->body($this->grid());
     }
 
@@ -81,30 +83,31 @@ class ProductsController extends Controller
     {
         $grid = new Grid(new Product);
 
-        $grid->model()->where('type', Product::TYPE_NORMAL);
-        $grid->id('Id');
-        $grid->title('名称');
-        // $grid->description('描述');
-        $grid->with(['category']);
-        $grid->image('图片')->display(function ($value) {
-            return '<image src="'.$this->image_url.'" width="50"/>';
+        $grid->model()->where('type', Product::TYPE_CROWDFUNDING);
+        $grid->id('ID')->sortable();
+        $grid->title('商品名称');
+        // $grid->category_id('Category id');
+        // $grid->description('Description');
+        // $grid->image('Image');
+        $grid->on_sale('是否上架')->display(function($vlaue) {
+            return $vlaue ? '是':'否';
         });
-        $grid->on_sale('是否上架')->display(function ($value) {
-            return $value ? '是':'否';
+        // $grid->rating('Rating');
+        // $grid->sold_count('Sold count');
+        // $grid->review_count('Review count');
+        $grid->price('价格');
+        $grid->column('crowdfunding.target_amount', '目标金额');
+        $grid->column('crowdfunding.end_at', '结束时间');
+        $grid->column('crowdfunding.total_amount', '已经众筹金额');
+        $grid->column('crowdfunding.status', '状态')->display(function($value) {
+            return CrowdfundingProduct::$statusMap[$value];
         });
-        $grid->rating('评分');
-        $grid->sold_count('销量');
-        $grid->review_count('评论数');
-        $grid->price('最低价格');
-        $grid->column('category.name', '类目');
-        $grid->created_at('创建时间');
-        // $grid->updated_at('Updated at');
-
+        //$grid->created_at('Created at');
+        //$grid->updated_at('Updated at');
         $grid->actions(function ($actions) {
             $actions->disableView();
             $actions->disableDelete();
         });
-
         $grid->tools(function ($tools) {
             $tools->batch(function ($batch) {
                 $batch->disableDelete();
@@ -124,7 +127,9 @@ class ProductsController extends Controller
         $show = new Show(Product::findOrFail($id));
 
         $show->id('Id');
+        $show->type('Type');
         $show->title('Title');
+        $show->category_id('Category id');
         $show->description('Description');
         $show->image('Image');
         $show->on_sale('On sale');
@@ -147,6 +152,7 @@ class ProductsController extends Controller
     {
         $form = new Form(new Product);
 
+        $form->hidden('type')->value(Product::TYPE_CROWDFUNDING);
         // 创建一个输入框，第一个参数 title 是模型的字段名，第二个参数是该字段描述
         $form->text('title', '商品名称')->rules('required');
 
@@ -164,6 +170,10 @@ class ProductsController extends Controller
                 return [$category->id => $category->full_name];
             }
         })->ajax('/admin/api/categories?is_directory=0');
+        // 添加众筹相关字段
+        $form->text('crowdfunding.target_amount', '众筹目标金额')->rules('required|numeric|min:0.01');
+        $form->datetime('crowdfunding.end_at', '众筹结束时间')->rules('required|date');
+ 
         // 直接添加一对多的关联模型
         $form->hasMany('skus', 'SKU 列表', function (Form\NestedForm $form) {
             $form->text('title', 'SKU 名称')->rules('required');

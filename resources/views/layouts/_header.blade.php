@@ -12,7 +12,7 @@
       </a>
     </div>
     <div class="collapse navbar-collapse" id="app-navbar-collapse">
-        <ul class="navbar-nav mr-auto">
+        <ul class="navbar-nav mr-auto category-tree">
             <!-- 顶部类目菜单开始 -->
             <!-- 判断模板是否有 $categoryTree 变量 -->
             @if(isset($categoryTree))

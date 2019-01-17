@@ -21,4 +21,6 @@ Route::group([
     $router->resource('coupon_codes', 'CouponCodesController', ['except' => ['show']]);
     $router->get('api/categories', 'CategoriesController@apiIndex');
     $router->resource('categories', 'CategoriesController', ['except' => 'show']);
+
+    $router->resource('crowdfundings', 'CrowdfundingProductsController', ['except' => 'show']);
 });
