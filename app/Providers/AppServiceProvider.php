@@ -17,6 +17,10 @@ class AppServiceProvider extends ServiceProvider
     {
         \App\Models\Order::observe(\App\Observers\OrderObserver::class);
 
+        // 当 Laravel 渲染 products.index 和 products.show 模板时，就会使用 CategoryTreeComposer 这个来注入类目树变量
+        // 同时 Laravel 还支持通配符，例如 products.* 即代表当渲染 products 目录下的模板时都执行这个 ViewComposer
+        \View::composer(['products.index', 'products.show'], \App\Http\ViewComposers\CategoryTreeComposer::class);
+        
         //打印sql执行记录
         // if (config('app.debug')) {
         //     // \DB::listen(function ($query) {
