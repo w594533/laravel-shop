@@ -48,6 +48,9 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/payment/{order}/wechat', 'PaymentController@payByWechat')->name('payment.wechat');
 
     Route::post('/coupon_codes', 'CouponCodesController@show')->name('coupon_codes.show');
+
+    Route::post('crowdfunding_orders', 'OrdersController@crowdfunding')->name('crowdfunding_orders.store');
+    
     Route::group(['middleware' => 'emailVerify'], function () {
         Route::resource('user_addresses', 'UserAddressController');
         Route::get('/test', function () {

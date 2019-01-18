@@ -16,6 +16,7 @@ use Carbon\Carbon;
 use App\Jobs\ColseOrder;
 use App\Http\Requests\OrderReviewRequest;
 use App\Http\Requests\ApplyRefundRequest;
+use App\Http\Requests\CrowdFundingOrderRequest;
 use App\Events\OrderReviewed;
 use App\Models\CouponCode;
 
@@ -48,6 +49,16 @@ class OrdersController extends Controller
         }
         $user_address = UserAddress::find($request->address_id);
         $order = $this->orderService->store($user_address, $request->items, $request->remark, $coupon);
+        return $order;
+    }
+
+    public function crowdfunding(CrowdFundingOrderRequest $request)
+    {
+        $user = $request->user();
+        $user_address = UserAddress::find($request->input('address_id'));
+        $sku = ProductSku::find($request->input('sku_id'));
+        $amount = $request->input('amount');
+        $order = $this->orderService->crowdfunding($user, $user_address, $sku, $amount);
         return $order;
     }
 

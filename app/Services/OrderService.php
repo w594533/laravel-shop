@@ -91,4 +91,46 @@ class OrderService
         });
         return $order;
     }
+
+    public function crowdfunding(User $user, UserAddress $user_address, ProductSku $sku, $amount)
+    {
+        //开启事务
+        return \DB::transactoin(function() use ($user, $user_address, $sku, $amount){
+            $user_address->update(['last_used_at' => Carbon::now()]);
+            //创建订单
+            $order = new Order([
+              'address' => [
+                'address'       => $user_address->full_address,
+                'zip'           => $user_address->zip,
+                'contact_name'  => $user_address->contact_name,
+                'contact_phone' => $user_address->contact_phone,
+              ],
+              'remark' => $remark,
+              'total_amount' => 0
+            ]);
+            $order->user()->associate($user);
+            $order->save();
+
+            $item = $order->items()->make([
+                'amount' => $amount,
+                'price' => $sku->price
+            ]);
+
+            $item->product()->associate($sku->product_id);
+            $item->productSku()->associate($sku);
+            $item->save();
+
+            // 扣减对应 SKU 库存
+            if ($sku->decreaseStock($amount) <= 0) {
+                throw new InvalidRequestException('该商品库存不足');
+            }
+
+            // 众筹结束时间减去当前时间得到剩余秒数
+            $crowdfundingTtl = $sku->product->crowdfunding->end_at->getTimestamp() - time();
+
+            ColseOrder::dispatch($order, min(config('app.order_ttl'), $crowdfundingTtl));
+
+            return $order;
+        });
+    }
 }
