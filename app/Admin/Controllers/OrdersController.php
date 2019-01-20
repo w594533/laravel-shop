@@ -54,7 +54,7 @@ class OrdersController extends Controller
         if ($order->paid_at && $order->ship_status === Order::SHIP_STATUS_PENDING) {
             if (
                 $order->type === Product::TYPE_NORMAL || 
-                ($order->type === product::TYPE_CROWDFUNDING && $order->items()->first()->product()->crowdfunding()->status === CrowdfundingProduct::STATUS_SUCCESS)
+                ($order->type === product::TYPE_CROWDFUNDING && $order->items[0]->product->crowdfunding->status === CrowdfundingProduct::STATUS_SUCCESS)
             ) {
                 $content->body($this->shipForm($id));
             }
@@ -76,7 +76,7 @@ class OrdersController extends Controller
         }
 
         if (
-            ($order->type === product::TYPE_CROWDFUNDING && $order->items()->first()->product()->crowdfunding()->status !== CrowdfundingProduct::STATUS_SUCCESS)
+            ($order->type === product::TYPE_CROWDFUNDING && $order->items[0]->product->crowdfunding->status !== CrowdfundingProduct::STATUS_SUCCESS)
         ) {
             throw new InvalidRequestException('众筹订单未成功，不可发货');
         }

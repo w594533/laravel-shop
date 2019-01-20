@@ -36,7 +36,7 @@ class CrowdFundingOrderRequest extends FormRequest
                     }
 
                     $product = $sku->product;
-                    if ($product->on_sale) {
+                    if (!$product->on_sale) {
                         return $fail('商品已下架');
                     }
 

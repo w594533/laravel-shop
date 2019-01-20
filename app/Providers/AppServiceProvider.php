@@ -49,11 +49,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton('alipay', function () {
             $config = config('pay.alipay');
             $config['return_url'] = route('payment.alipay.return');
-            $config['notify_url'] = route('payment.alipay.notify');
+            $config['notify_url'] = ngrok_url('payment.alipay.notify');
             if (app()->environment() !== 'production') {
                 $config['mode'] = 'dev';
                 $config['log']['level'] = Logger::DEBUG;
-                $config['notify_url'] = 'http://requestbin.leo108.com/1jaufje1';
+                $config['notify_url'] = ngrok_url('payment.alipay.notify');
             } else {
                 $config['log']['level'] = Logger::WARNING;
             }
@@ -63,7 +63,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->singleton('wechat_pay', function () {
             $config = config('pay.wechat');
-            $config['notify_url'] = route('payment.wechat.notify');
+            $config['notify_url'] = ngrok_url('payment.wechat.notify');
             if (app()->environment() !== 'production') {
                 $config['mode'] = 'dev';
                 $config['log']['level'] = Logger::DEBUG;

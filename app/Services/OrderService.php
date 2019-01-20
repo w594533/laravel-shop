@@ -9,6 +9,7 @@ use App\Models\UserAddress;
 use App\Models\OrderItem;
 use App\Models\ProductSku;
 use App\Models\Product;
+use App\Models\User;
 use App\Jobs\ColseOrder;
 use Carbon\Carbon;
 use App\Models\CouponCode;
@@ -97,7 +98,7 @@ class OrderService
     public function crowdfunding(User $user, UserAddress $user_address, ProductSku $sku, $amount)
     {
         //开启事务
-        return \DB::transactoin(function() use ($user, $user_address, $sku, $amount){
+        return \DB::transaction(function() use ($user, $user_address, $sku, $amount){
             $user_address->update(['last_used_at' => Carbon::now()]);
             //创建订单
             $order = new Order([
@@ -107,8 +108,8 @@ class OrderService
                 'contact_name'  => $user_address->contact_name,
                 'contact_phone' => $user_address->contact_phone,
               ],
-              'remark' => $remark,
-              'total_amount' => 0,
+              'remark' => '',
+              'total_amount' => $sku->price * $amount,
               'type' => Product::TYPE_CROWDFUNDING
             ]);
             $order->user()->associate($user);
