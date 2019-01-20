@@ -106,6 +106,10 @@ class OrdersController extends Controller
 
     public function sendRefund(Order $order, ApplyRefundRequest $request)
     {
+        if($order->type !== Product::TYPE_NORMAL) {
+            throw new InvalidRequestException('订单不支持退款');
+        }
+        
         if (!$order->paid_at) {
             throw new InvalidRequestException('订单未支付');
         }

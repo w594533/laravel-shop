@@ -3,6 +3,8 @@
 namespace App\Admin\Controllers;
 
 use App\Models\Order;
+use App\Models\Product;
+use App\Models\CrowdfundingProduct;
 use App\Http\Controllers\Controller;
 use Encore\Admin\Controllers\HasResourceActions;
 use Encore\Admin\Form;
@@ -50,8 +52,14 @@ class OrdersController extends Controller
         $order = Order::findOrFail($id);
         //发货
         if ($order->paid_at && $order->ship_status === Order::SHIP_STATUS_PENDING) {
-            $content->body($this->shipForm($id));
+            if (
+                $order->type === Product::TYPE_NORMAL || 
+                ($order->type === product::TYPE_CROWDFUNDING && $order->items()->first()->product()->crowdfunding()->status === CrowdfundingProduct::STATUS_SUCCESS)
+            ) {
+                $content->body($this->shipForm($id));
+            }
         }
+
         //处理退款
         if ($order->refund_status === Order::REFUND_STATUS_APPLIED) {
             $content->body($this->dealRefundForm($id));
@@ -66,6 +74,13 @@ class OrdersController extends Controller
         if (!$order->paid_at) {
             throw new InvalidRequestException('该订单未付款');
         }
+
+        if (
+            ($order->type === product::TYPE_CROWDFUNDING && $order->items()->first()->product()->crowdfunding()->status !== CrowdfundingProduct::STATUS_SUCCESS)
+        ) {
+            throw new InvalidRequestException('众筹订单未成功，不可发货');
+        }
+
         // 判断当前订单发货状态是否为未发货
         if ($order->ship_status !== Order::SHIP_STATUS_PENDING) {
             throw new InvalidRequestException('该订单已发货');

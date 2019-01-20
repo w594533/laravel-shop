@@ -114,7 +114,7 @@
                   </li>
                 @endif
                 <!-- 订单已支付，且退款状态是未退款时展示申请退款按钮 -->
-                @if($order->paid_at && $order->canRefund())
+                @if($order->type === \App\Models\Product::TYPE_NORMAL && $order->paid_at && $order->canRefund())
                 <li class="clearfix refund-button">
                   <button class="btn btn-sm btn-danger pull-right" id="btn-apply-refund">申请退款</button>
                 </li>

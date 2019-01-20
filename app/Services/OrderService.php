@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\UserAddress;
 use App\Models\OrderItem;
 use App\Models\ProductSku;
+use App\Models\Product;
 use App\Jobs\ColseOrder;
 use Carbon\Carbon;
 use App\Models\CouponCode;
@@ -44,7 +45,8 @@ class OrderService
                 'contact_phone' => $user_address->contact_phone,
               ],
               'remark' => $remark,
-              'total_amount' => 0
+              'total_amount' => 0,
+              'type' => Product::TYPE_NORMAL
             ]);
             $order->user()->associate($user);
             $order->save();
@@ -106,7 +108,8 @@ class OrderService
                 'contact_phone' => $user_address->contact_phone,
               ],
               'remark' => $remark,
-              'total_amount' => 0
+              'total_amount' => 0,
+              'type' => Product::TYPE_CROWDFUNDING
             ]);
             $order->user()->associate($user);
             $order->save();

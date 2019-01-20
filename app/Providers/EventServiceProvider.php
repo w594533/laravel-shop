@@ -24,6 +24,7 @@ class EventServiceProvider extends ServiceProvider
         'App\Events\OrderPaid' => [
           'App\Listeners\UpdateProductSoldCount',
           'App\Listeners\OrderPaidNotification',
+          'App\Listeners\UpdateCrowdfundingProductProgress'
         ],
         'App\Events\OrderReviewed' => [
           'App\Listeners\UpdateProductRating',
