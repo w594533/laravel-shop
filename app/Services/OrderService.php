@@ -137,4 +137,39 @@ class OrderService
             return $order;
         });
     }
+
+    public function refundOrder(Order $order)
+    {
+        if ($order->payment_method === 'wechat_pay') {
+            //todo
+            return true;
+        } else if ($order->payment_method === 'alipay') {
+            $refund_no = Order::findAvailableRefundNo();
+            $result = app('alipay')->refund([
+                'out_trade_no' => $order->no, // 之前的订单流水号
+                'refund_amount' => 1, //$order->total_amount, // 退款金额，单位元
+                'out_request_no' => $refund_no, // 退款订单号
+            ]);
+
+            //根据支付宝文档，如果返回了业务返回码，说明发生了错误
+            if ($result->sub_code) {
+                $extra = $order->extra;
+                $extra['refund_failed_code'] = $refund_no;
+                $order->update([
+                    'refund_status' => Order::REFUND_STATUS_FAILED,
+                    'refund_no' => $refund_no,
+                    'extra' => $extra
+                ]);
+                return false;
+            } else {
+                $order->update([
+                    'refund_status' => Order::REFUND_STATUS_SUCCESS,
+                    'refund_no' => $refund_no
+                ]);
+                return true;
+            }
+        } else {
+            throw new InvalidRequestException('无效的支付方式');
+        }
+    }
 }
