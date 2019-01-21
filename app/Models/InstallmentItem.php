@@ -46,7 +46,7 @@ class InstallmentItem extends Model
             $total->add($this->fine);
         }
 
-        return $total;
+        return $total->getValue();
     }
 
     //判断是否已经逾期

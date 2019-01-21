@@ -51,6 +51,8 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::post('crowdfunding_orders', 'OrdersController@crowdfunding')->name('crowdfunding_orders.store');
     
+    Route::post('payment/{order}/installment', 'PaymentController@payByInstallment')->name('payment.installment');
+
     Route::group(['middleware' => 'emailVerify'], function () {
         Route::resource('user_addresses', 'UserAddressController');
         Route::get('/test', function () {

@@ -41,6 +41,7 @@ class OrdersController extends Controller
     public function store(OrderRequest $request)
     {
         // 如果用户提交了优惠码
+        $coupon = null;
         if ($code = $request->input('coupon_code')) {
             $coupon = CouponCode::where('no', $code)->first();
             if (!$coupon) {

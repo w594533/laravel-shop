@@ -24,19 +24,19 @@ class AppServiceProvider extends ServiceProvider
         \View::composer(['products.index', 'products.show'], \App\Http\ViewComposers\CategoryTreeComposer::class);
         
         //打印sql执行记录
-        // if (config('app.debug')) {
-        //     // \DB::listen(function ($query) {
-        //     //     $sql = $query->sql;
-        //     //     $bindings = $query->bindings;
-        //     //     $time = $query->time;
-        //     //     //写入sql
-        //     //     if ($bindings) {
-        //     //         \Log::info(date("Y-m-d H:i:s") . "]" . $sql . "\r\nparmars:" . json_encode($bindings, 320) . "\r\n\r\n");
-        //     //     } else {
-        //     //         \Log::info("[" . date("Y-m-d H:i:s") . "]" . $sql . "\r\n\r\n");
-        //     //     }
-        //     // });
-        // }
+        if (config('app.debug')) {
+            \DB::listen(function ($query) {
+                $sql = $query->sql;
+                $bindings = $query->bindings;
+                $time = $query->time;
+                //写入sql
+                if ($bindings) {
+                    \Log::info(date("Y-m-d H:i:s") . "]" . $sql . "\r\nparmars:" . json_encode($bindings, 320) . "\r\n\r\n");
+                } else {
+                    \Log::info("[" . date("Y-m-d H:i:s") . "]" . $sql . "\r\n\r\n");
+                }
+            });
+        }
     }
 
     /**
