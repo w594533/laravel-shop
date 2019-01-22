@@ -53,6 +53,8 @@ Route::group(['middleware' => 'auth'], function () {
     
     Route::post('payment/{order}/installment', 'PaymentController@payByInstallment')->name('payment.installment');
 
+
+    Route::resource('installments', 'InstallmentsController', ['only' => ['show', 'index']]);
     Route::group(['middleware' => 'emailVerify'], function () {
         Route::resource('user_addresses', 'UserAddressController');
         Route::get('/test', function () {
