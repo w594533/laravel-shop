@@ -17,6 +17,9 @@ Auth::routes();
 Route::get("/payment/alipay/return", 'PaymentController@alipayReturn')->name('payment.alipay.return');
 Route::post("/payment/alipay/notify", 'PaymentController@alipayNotify')->name('payment.alipay.notify');
 Route::post("/payment/wechat/notify", 'PaymentController@wechatPayNotify')->name('payment.wechat.notify');
+// 后端回调不能放在 auth 中间件中
+Route::get('installments/alipay/return', 'InstallmentsController@alipayReturn')->name('installments.alipay.return');
+Route::post('installments/alipay/notify', 'InstallmentsController@alipayNotify')->name('installments.alipay.notify');
 
 Route::group(['middleware' => 'auth'], function () {
     Route::get('/email_verify_notice', 'PagesController@emailVerifyNotice')->name('email_verify_notice');
@@ -54,7 +57,11 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('payment/{order}/installment', 'PaymentController@payByInstallment')->name('payment.installment');
 
 
-    Route::resource('installments', 'InstallmentsController', ['only' => ['show', 'index']]);
+    Route::get('installments/{installment}/alipay', 'InstallmentsController@payByAlipay')->name('installments.alipay');
+    
+    Route::get('installments', 'InstallmentsController@index')->name('installments.index');
+    Route::get('installments/{installment}', 'InstallmentsController@show')->name('installments.show');
+    
     Route::group(['middleware' => 'emailVerify'], function () {
         Route::resource('user_addresses', 'UserAddressController');
         Route::get('/test', function () {

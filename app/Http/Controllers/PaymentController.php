@@ -153,10 +153,15 @@ class PaymentController extends Controller
             ]
         ]);
 
-        Installment::query()
+        $installment = Installment::query()
                 ->where('order_id', $order->id)
                 ->where('status', Installment::STATUS_PENDING)
-                ->delete();
+                ->first();
+        if ($installment) {
+            $installment->items()->delete();
+            $installment->delete();
+        }
+        
 
         $count = $request->input('count');
 

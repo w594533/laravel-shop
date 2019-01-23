@@ -189,6 +189,7 @@
         .then(function (response) {
           console.log(response.data);
           // todo 跳转到分期付款页面
+          // location.href="{{ route('installments.show', ['installment' => "+response.data.id+"]) }}";
         })
     });
     
