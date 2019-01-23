@@ -32,7 +32,7 @@
               </div>
               <div class="line">
                 <div class="line-label">逾期费率：</div>
-                <div class="line-value">{{ $installment->fine }}%</div>
+                <div class="line-value">{{ $installment->fine_rate }}%</div>
               </div>
               <div class="line">
                 <div class="line-label">当前状态：</div>

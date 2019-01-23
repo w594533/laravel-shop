@@ -50,7 +50,7 @@ class InstallmentItem extends Model
     }
 
     //判断是否已经逾期
-    public function getIsOverAttribute()
+    public function getIsOverDueAttribute()
     {
         return Carbon::now()->gt($this->due_date);
     }
