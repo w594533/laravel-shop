@@ -86,7 +86,19 @@
             <li role="presentation"><a href="#product-reviews-tab" aria-controls="product-reviews-tab" role="tab" data-toggle="tab">用户评价</a></li>
           </ul>
           <div class="tab-content">
+            
             <div role="tabpanel" class="tab-pane active" id="product-detail-tab">
+              <!-- 产品属性开始 -->
+              <div class="properties-list">
+                <div class="properties-list-title">产品参数：</div>
+                <ul class="properties-list-body">
+                  @foreach($product->grouped_properties as $name => $values)
+                    <li>{{ $name }}：{{ join(",", $values) }}</li>
+                  @endforeach
+                </ul>
+              </div>
+              <!-- 产品属性结束 -->
+
               {!! $product->description !!}
             </div>
             <div role="tabpanel" class="tab-pane" id="product-reviews-tab">

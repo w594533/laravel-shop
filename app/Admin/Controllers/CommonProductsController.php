@@ -129,6 +129,11 @@ abstract class CommonProductsController extends Controller
             $form->text('stock', '剩余库存')->rules('required|integer|min:0');
         });
 
+        $form->hasMany('properties', '商品属性', function(Form\NestedForm $form) {
+            $form->text('name', '属性名称');
+            $form->text('value', '属性值');
+        });
+
         
 
         $form->saving(function (Form $form) {
