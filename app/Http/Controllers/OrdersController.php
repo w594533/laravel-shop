@@ -115,7 +115,7 @@ class OrdersController extends Controller
             throw new InvalidRequestException('订单未支付');
         }
 
-        if ($order->canRefund()) {
+        if (!$order->canRefund()) {
             throw new InvalidRequestException('退款状态错误');
         }
 

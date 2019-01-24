@@ -55,6 +55,10 @@
                 <div class="payment-buttons">
                   @if ($installment->order->closed)
                       <span>订单已关闭</span>
+                  @elseif (in_array($installment->order->refund_status, [
+                    \App\Models\Order::REFUND_STATUS_SUCCESS
+                  ]))
+                      <span>{{ \App\Models\Order::$refundStatusMap[$installment->order->refund_status] }}</span>
                   @else
                     <a class="btn btn-primary btn-sm" href="{{route('installments.alipay', ['installment' => $installment->id])}}">支付宝支付</a>
                     <button class="btn btn-sm btn-success" id='btn-wechat'>微信支付</button>

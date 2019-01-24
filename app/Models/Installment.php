@@ -56,5 +56,26 @@ class Installment extends Model
         return $this->hasMany(InstallmentItem::class);
     }
 
+    public function refreshRefundStatus()
+    {
+        $allSuccess = true;
+        // 重新加载 items，保证与数据库中数据同步
+        $this->load(['items']);
+        \Log::debug('result', 333);
+        foreach ($this->items as $item) {
+            \Log::debug('result', $item->paid_at);
+            \Log::debug('install', $item->refund_status);
+            \Log::debug('status', $item->paid_at && $item->refund_status !== InstallmentItem::REFUND_STATUS_SUCCESS);
+            if ($item->paid_at && $item->refund_status !== InstallmentItem::REFUND_STATUS_SUCCESS) {
+                $allSuccess = false;
+                break;
+            }
+        }
+        if ($allSuccess) {
+            $this->order->update([
+                'refund_status' => Order::REFUND_STATUS_SUCCESS,
+            ]);
+        }
+    }
 
 }

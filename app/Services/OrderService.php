@@ -13,6 +13,8 @@ use App\Models\User;
 use App\Jobs\ColseOrder;
 use Carbon\Carbon;
 use App\Models\CouponCode;
+use App\Jobs\RefundCrowdfundingOrders;
+use App\Jobs\RefundInstallmentOrder;
 
 class OrderService
 {
@@ -168,6 +170,14 @@ class OrderService
                 ]);
                 return true;
             }
+        } else if($order->payment_method === 'installment') {
+            $order->update([
+                'refund_no' => Order::findAvailableRefundNo(),
+                'refund_status' => Order::REFUND_STATUS_PROCESSING
+            ]);
+
+            dispatch(new RefundInstallmentOrder($order));
+            return true;
         } else {
             throw new InvalidRequestException('无效的支付方式');
         }
