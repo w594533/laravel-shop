@@ -43,12 +43,12 @@
             <button class="btn btn-primary btn-sm">搜索</button>
             <select name="order" class="form-control input-sm pull-right form-filter-order">
               <option value="">排序方式</option>
-              <option value="price_asc">价格从低到高</option>
-              <option value="price_desc">价格从高到低</option>
-              <option value="sold_count_desc">销量从高到低</option>
-              <option value="sold_count_asc">销量从低到高</option>
-              <option value="rating_desc">评价从高到低</option>
-              <option value="rating_asc">评价从低到高</option>
+              <option value="price_asc" {{$filters['order'] === 'price_asc' ? 'selected': ''}}>价格从低到高</option>
+              <option value="price_desc" {{$filters['order'] === 'price_desc' ? 'selected': ''}}>价格从高到低</option>
+              <option value="sold_count_desc" {{$filters['order'] === 'sold_count_desc' ? 'selected': ''}}>销量从高到低</option>
+              <option value="sold_count_asc" {{$filters['order'] === 'sold_count_asc' ? 'selected': ''}}>销量从低到高</option>
+              <option value="rating_desc" {{$filters['order'] === 'rating_desc' ? 'selected': ''}}>评价从高到低</option>
+              <option value="rating_asc" {{$filters['order'] === 'rating_asc' ? 'selected': ''}}>评价从低到高</option>
             </select>
           </form>
         </div>
