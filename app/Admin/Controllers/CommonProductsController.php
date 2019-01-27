@@ -10,6 +10,7 @@ use Encore\Admin\Layout\Content;
 use Encore\Admin\Show;
 use App\Models\CrowdfundingProduct;
 use App\Models\Category;
+use App\Jobs\SyncProductToES;
 
 abstract class CommonProductsController extends Controller
 {
@@ -142,6 +143,11 @@ abstract class CommonProductsController extends Controller
             if ($form->input('skus')) {
                 $form->model()->price = collect($form->input('skus'))->where(Form::REMOVE_FLAG_NAME, 0)->min('price') ?: 0;
             }
+        });
+
+        $form->saved(function (Form $form) {
+            $product = $form->model();
+            $this->dispatch(new SyncProductToES($product));
         });
 
         $form->tools(function (Form\Tools $tools) {
