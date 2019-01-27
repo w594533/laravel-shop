@@ -87,6 +87,53 @@ class ProductsController extends Controller
             }
         }
 
+        if($search || isset($category)) {
+            $params['body']['aggs'] = [
+                'properties' => [
+                    'nested' => [
+                        'path' => 'properties'
+                    ],
+                    'aggs' => [
+                        'properties' => [
+                            'terms' => [
+                                'field' => 'properties.name'
+                            ],
+                            'aggs' => [
+                                'value' => [
+                                    'terms' => [
+                                        'field' => 'properties.value'
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ];
+        }
+
+        //从用户请求参数获取filters
+        $propertyFilters = [];
+        if($filterString = $request->input('filters')) {
+            $filterArray = explode('|', $filterString);
+
+            foreach($filterArray as $filter) {
+                list($name, $value) = explode(":", $filter);
+
+                $propertyFilters[$name] = $value;
+                //添加到filter类型中
+                $params['body']['query']['bool']['filter'][] = [
+                    'nested' => [
+                        //指明nested字段
+                        'path' => 'properties',
+                        'query' => [
+                            ['term' => ['properties.name' => $name]],
+                            ['term' => ['properties.value' => $value]]
+                        ]
+                    ]
+                ];
+            }
+        }
+
         $result = app('es')->search($params);
 
         //通过collect函数将返回结果转为集合，通过pluck返回id数组
@@ -101,6 +148,21 @@ class ProductsController extends Controller
             'path' => route('products.index', false), // 手动构建分页的 url
         ]);
 
+        // dd($result['aggregations']);
+        $properties = [];
+        if (isset($result['aggregations'])) {
+            //使用collect 函数将返回值转为集合
+            $properties = collect($result['aggregations']['properties']['properties']['buckets'])
+                                ->map(function($bucket) {
+                                    return [
+                                        'key' => $bucket['key'],
+                                        'values' => collect($bucket['value']['buckets'])->pluck('key')->all()
+                                    ];
+                                })
+                                ->filter(function($property) use ($propertyFilters) {
+                                    return count($property['values']) > 1 && !isset($propertyFilters[$property['key']]);
+                                });
+        }
         
 
 
@@ -110,75 +172,12 @@ class ProductsController extends Controller
           'products' => $pager,
           'category' => $category,
           'categories' => $categories,
+          'properties' => $properties,
+          'propertyFilters' => $propertyFilters,
           'filters' => [
             'search' => $search,
             'order' => $order,
             'category_id' => $category_id
-            ]
-          ]
-        );
-
-
-
-        $builder = Product::query()->where('on_sale', true);
-
-        //search搜索
-        if ($search = $request->input('search', '')) {
-            $like = '%'.$search.'%';
-            $builder->where(function ($query) use ($like) {
-                $query->where('title', 'like', $like)
-                    ->orWhere('description', 'like', $like)
-                    ->orWhereHas('skus', function ($query) use ($like) {
-                        $query->where('title', 'like', $like)
-                            ->orWhere('description', 'like', $like);
-                    });
-            });
-        }
-
-        //分类
-        $category = null;
-        $categories = [];
-        if($category_id = $request->input('category_id', '')) {
-            $category = Category::find($category_id);
-            if ($category) {
-                // 如果这是一个父类目
-                if ($category->is_directory) {
-                    // 则筛选出该父类目下所有子类目的商品
-                    $builder->whereHas('category', function ($query) use ($category) {
-                        $query->where('path', 'like', $category->path.$category->id.'-%');
-                    });
-
-                    $categories = $category->childrens;
-                } else {
-                    // 如果这不是一个父类目，则直接筛选此类目下的商品
-                    $builder->where('category_id', $category->id);
-                    
-                }
-            }
-        } else {
-            $categories = Category::where('level', 0)->get();
-        }
-
-        //order排序
-        if ($order = $request->input('order', '')) {
-            if (preg_match('/^(.+)_(asc|desc)$/', $order, $m)) {
-                $builder->orderBy($m[1], $m[2]);
-            }
-        }
-
-        
-        $products = $builder->paginate(16);
-
-        return view(
-            'products.index',
-            [
-          'products' => $products,
-          'category' => $category,
-          'categories' => $categories,
-          'filters' => [
-            'search' => $search,
-            'order' => $order,
-            'category_id' => $category_id,
             ]
           ]
         );
