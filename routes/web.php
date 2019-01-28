@@ -66,9 +66,9 @@ Route::group(['middleware' => 'auth'], function () {
     
     Route::group(['middleware' => 'emailVerify'], function () {
         Route::resource('user_addresses', 'UserAddressController');
-        Route::get('/test', function () {
-            return '已认证邮箱';
-        });
+        // Route::get('/test', function () {
+        //     return '已认证邮箱';
+        // });
     });
 });
 Route::resource('products', 'ProductsController', ['only' => ['index', 'show']]);
