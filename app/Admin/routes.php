@@ -23,4 +23,6 @@ Route::group([
     $router->resource('categories', 'CategoriesController', ['except' => 'show']);
 
     $router->resource('crowdfundings', 'CrowdfundingProductsController', ['except' => 'show']);
+
+    $router->resource('seckills', 'SeckillProductsController', ['except' => 'show']);
 });
