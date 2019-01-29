@@ -40,7 +40,7 @@ class CrowdFundingOrderRequest extends FormRequest
                         return $fail('商品已下架');
                     }
 
-                    if($product->type !== product::TYPE_CROWDFUNDING) {
+                    if($product->type !== Product::TYPE_CROWDFUNDING) {
                         return $fail('该商品不支持众筹');
                     }
 

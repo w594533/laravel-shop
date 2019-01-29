@@ -140,6 +140,47 @@ class OrderService
         });
     }
 
+    public function seckill(User $user, UserAddress $user_address, ProductSku $sku)
+    {
+        //开启事务
+        return \DB::transaction(function() use ($user, $user_address, $sku){
+            $user_address->update(['last_used_at' => Carbon::now()]);
+            $amount = 1;
+            //创建订单
+            $order = new Order([
+              'address' => [
+                'address'       => $user_address->full_address,
+                'zip'           => $user_address->zip,
+                'contact_name'  => $user_address->contact_name,
+                'contact_phone' => $user_address->contact_phone,
+              ],
+              'remark' => '',
+              'total_amount' => $sku->price * $amount,
+              'type' => Product::TYPE_SECKILL
+            ]);
+            $order->user()->associate($user);
+            $order->save();
+
+            $item = $order->items()->make([
+                'amount' => $amount,
+                'price' => $sku->price
+            ]);
+
+            $item->product()->associate($sku->product_id);
+            $item->productSku()->associate($sku);
+            $item->save();
+
+            // 扣减对应 SKU 库存
+            if ($sku->decreaseStock($amount) <= 0) {
+                throw new InvalidRequestException('该商品库存不足');
+            }
+
+            ColseOrder::dispatch($order, config('app.seckill_order_ttl'));
+
+            return $order;
+        });
+    }
+
     public function refundOrder(Order $order)
     {
         if ($order->payment_method === 'wechat_pay') {

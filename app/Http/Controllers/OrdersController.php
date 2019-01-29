@@ -17,6 +17,7 @@ use App\Jobs\ColseOrder;
 use App\Http\Requests\OrderReviewRequest;
 use App\Http\Requests\ApplyRefundRequest;
 use App\Http\Requests\CrowdFundingOrderRequest;
+use App\Http\Requests\SeckillOrderRequest;
 use App\Events\OrderReviewed;
 use App\Models\CouponCode;
 
@@ -61,6 +62,15 @@ class OrdersController extends Controller
         $amount = $request->input('amount');
         $order = $this->orderService->crowdfunding($user, $user_address, $sku, $amount);
         return $order;
+    }
+
+    public function seckill(SeckillOrderRequest $request)
+    {
+        $user    = $request->user();
+        $address = UserAddress::find($request->input('address_id'));
+        $sku     = ProductSku::find($request->input('sku_id'));
+
+        return $this->orderService->seckill($user, $address, $sku);
     }
 
     public function received(Order $order)

@@ -131,6 +131,8 @@ return [
 
     'order_ttl' => 1800,//关闭订单时间 单位 秒
 
+    'seckill_order_ttl' => 600, //秒杀订单关闭时间
+
     'installment_fee_rate' => [
         3 => 1.5,
         6 => 2,
