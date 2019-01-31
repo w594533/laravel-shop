@@ -20,6 +20,8 @@ class ColseOrder implements ShouldQueue
      */
     public function __construct(Order $order, $delay)
     {
+        \Log::debug('order_ttl_close', $order);
+        \Log::debug('order_ttl_delay', $delay);
         $this->order = $order;
         $this->delay = $delay;
     }
