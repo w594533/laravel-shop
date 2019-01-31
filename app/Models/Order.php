@@ -63,7 +63,7 @@ class Order extends Model
             return '已关闭';
         } else {
             $create_at = new Carbon($this->created_at);
-            return '未支付<br/>订单将于' . $this->created_at->format('H:i:s') . '自动关闭';
+            return '未支付<br/>订单将于' . $this->created_at->addSeconds(config('app.order_ttl'))->format('H:i:s') . '自动关闭';
         }
     }
 

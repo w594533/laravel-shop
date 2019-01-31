@@ -90,6 +90,8 @@ class OrderService
             //更新总价
             $order->update(['total_amount' => $totalAmount]);
 
+            \Log::debug('order_ttl', config('app.order_ttl'));
+
             ColseOrder::dispatch($order, config('app.order_ttl'));
 
             return $order;
@@ -162,7 +164,7 @@ class OrderService
             $order->save();
 
             $item = $order->items()->make([
-                'amount' => $amount,
+                'amount' => 1,
                 'price' => $sku->price
             ]);
 
@@ -171,9 +173,11 @@ class OrderService
             $item->save();
 
             // 扣减对应 SKU 库存
-            if ($sku->decreaseStock($amount) <= 0) {
+            if ($sku->decreaseStock(1) <= 0) {
                 throw new InvalidRequestException('该商品库存不足');
             }
+
+            \Log::debug('seckill_order_ttl', config('app.seckill_order_ttl'));
 
             ColseOrder::dispatch($order, config('app.seckill_order_ttl'));
 
