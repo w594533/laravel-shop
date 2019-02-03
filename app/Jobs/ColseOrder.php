@@ -20,8 +20,6 @@ class ColseOrder implements ShouldQueue
      */
     public function __construct(Order $order, $delay)
     {
-        \Log::debug('order_ttl_close', $order->toArray());
-        \Log::debug('order_ttl_delay', [$delay]);
         $this->order = $order;
         $this->delay = $delay;
     }
@@ -38,7 +36,6 @@ class ColseOrder implements ShouldQueue
         }
 
         \DB::transaction(function () {
-            \Log::debug('this close', [1]);
             $this->order->update(['closed' => true]);
             foreach ($this->order->items as $item) {
                 $item->productSku->addStock($item->amount);

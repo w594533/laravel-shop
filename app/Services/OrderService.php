@@ -90,7 +90,6 @@ class OrderService
             //更新总价
             $order->update(['total_amount' => $totalAmount]);
 
-            \Log::debug('order_ttl', [config('app.order_ttl')]);
             ColseOrder::dispatch($order, config('app.order_ttl'));
 
             return $order;
