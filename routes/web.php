@@ -10,6 +10,7 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
+Route::post('seckill_orders', 'OrdersController@seckill')->name('seckill_orders.store');
 Route::get("/", 'ProductsController@index')->name('root');
 
 Auth::routes();
@@ -22,6 +23,7 @@ Route::get('installments/alipay/return', 'InstallmentsController@alipayReturn')-
 Route::post('installments/alipay/notify', 'InstallmentsController@alipayNotify')->name('installments.alipay.notify');
 
 Route::post('installments/wechat/refund_notify', 'InstallmentsController@wechatRefundNotify')->name('installments.wechat.refund_notify');
+
 
 Route::group(['middleware' => 'auth'], function () {
     Route::get('/email_verify_notice', 'PagesController@emailVerifyNotice')->name('email_verify_notice');
@@ -55,7 +57,6 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/coupon_codes', 'CouponCodesController@show')->name('coupon_codes.show');
 
     Route::post('crowdfunding_orders', 'OrdersController@crowdfunding')->name('crowdfunding_orders.store');
-    Route::post('seckill_orders', 'OrdersController@seckill')->name('seckill_orders.store');
     
     Route::post('payment/{order}/installment', 'PaymentController@payByInstallment')->name('payment.installment');
 

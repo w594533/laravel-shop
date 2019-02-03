@@ -7,6 +7,8 @@ use Illuminate\Validation\Rule;
 use App\Models\Product;
 use App\Models\ProductSku;
 use App\Models\Order;
+use Illuminate\Auth\AuthenticationException;
+use App\Exceptions\InvalidRequestException;
 
 class SeckillOrderRequest extends FormRequest
 {
@@ -36,31 +38,35 @@ class SeckillOrderRequest extends FormRequest
             'address.contact_name'  => 'required',
             'address.contact_phone' => 'required',
             'sku_id' => function($attribute, $value, $fail) {
+                //从redis中读取数据
+                $stock = \Redis::get('seckill_sku_'.$value);
+
+                if(is_null($stock)) {
+                    return $fail('该商品不存在');
+                }
+
+                if($stock < 1) {
+                    return $fail('库存不足');
+                }
                 if (!$sku = ProductSku::find($value)) {
                     return $fail('商品不存在');
                 }
 
-                $product = $sku->product;
-                if (!$product->on_sale) {
-                    return $fail('商品已下架');
-                }
-
-                if($product->type !== Product::TYPE_SECKILL) {
-                    return $fail('该商品不支持秒杀');
-                }
-
-                if ($sku->stock < 1) {
-                    return $fail('该商品已售完');
-                }
-
-                $seckill_product = $product->seckill;
-
+                $sku = ProductSku::find($value);
+                $seckill_product = $sku->product->seckill;
                 if($seckill_product->is_before_start) {
                     return $fail('秒杀未开始');
                 }
 
                 if($seckill_product->is_after_end) {
                     return $fail('秒杀活动已结束');
+                }
+
+                if (!$user = \Auth::user()) {
+                    throw new AuthenticationException('请先登录');
+                }
+                if (!$user->is_email_verified) {
+                    throw new InvalidRequestException('请先验证邮箱');
                 }
 
                 if ($order = Order::query()
