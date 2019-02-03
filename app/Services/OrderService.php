@@ -140,19 +140,18 @@ class OrderService
         });
     }
 
-    public function seckill(User $user, UserAddress $user_address, ProductSku $sku)
+    public function seckill(User $user, array $addressData, ProductSku $sku)
     {
         //开启事务
-        return \DB::transaction(function() use ($user, $user_address, $sku){
-            $user_address->update(['last_used_at' => Carbon::now()]);
+        return \DB::transaction(function() use ($user, $addressData, $sku){
             $amount = 1;
             //创建订单
             $order = new Order([
               'address' => [
-                'address'       => $user_address->full_address,
-                'zip'           => $user_address->zip,
-                'contact_name'  => $user_address->contact_name,
-                'contact_phone' => $user_address->contact_phone,
+                'address'       => $addressData['province'].$addressData['city'].$addressData['district'].$addressData['address'],
+                'zip'           => $addressData['zip'],
+                'contact_name'  => $addressData['contact_name'],
+                'contact_phone' => $addressData['contact_phone'],
               ],
               'remark' => '',
               'total_amount' => $sku->price * $amount,

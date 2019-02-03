@@ -7,6 +7,7 @@ use Elasticsearch\ClientBuilder as ESClientBuilder;
 use Monolog\Logger;
 use Yansongda\Pay\Pay;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,18 +25,10 @@ class AppServiceProvider extends ServiceProvider
         // 同时 Laravel 还支持通配符，例如 products.* 即代表当渲染 products 目录下的模板时都执行这个 ViewComposer
         \View::composer(['products.index', 'products.show'], \App\Http\ViewComposers\CategoryTreeComposer::class);
         
-        //打印sql执行记录
-        if (config('app.debug')) {
+        // 只在本地开发环境启用 SQL 日志
+        if (app()->environment('local')) {
             \DB::listen(function ($query) {
-                $sql = $query->sql;
-                $bindings = $query->bindings;
-                $time = $query->time;
-                //写入sql
-                if ($bindings) {
-                    \Log::info(date("Y-m-d H:i:s") . "]" . $sql . "\r\nparmars:" . json_encode($bindings, 320) . "\r\n\r\n");
-                } else {
-                    \Log::info("[" . date("Y-m-d H:i:s") . "]" . $sql . "\r\n\r\n");
-                }
+                \Log::info(Str::replaceArray('?', $query->bindings, $query->sql));
             });
         }
     }
