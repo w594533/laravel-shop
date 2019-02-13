@@ -144,7 +144,14 @@ class OrderService
     {
         //开启事务
         return \DB::transaction(function() use ($user, $addressData, $sku){
+
+
             $amount = 1;
+            // 扣减对应 SKU 库存
+            if ($sku->decreaseStock($amount) <= 0) {
+                throw new InvalidRequestException('该商品库存不足');
+            }
+
             //创建订单
             $order = new Order([
               'address' => [
@@ -168,12 +175,6 @@ class OrderService
             $item->product()->associate($sku->product_id);
             $item->productSku()->associate($sku);
             $item->save();
-
-            // 扣减对应 SKU 库存
-            if ($sku->decreaseStock(1) <= 0) {
-                throw new InvalidRequestException('该商品库存不足');
-            }
-
             ColseOrder::dispatch($order, config('app.seckill_order_ttl'));
 
             \Redis::decr('seckill_sku_'.$sku->id);
