@@ -12,7 +12,7 @@ class CategoryService
             $allCategories = Category::all();
         }
 
-        return $allCategories
+        $result = $allCategories
                     ->where('parent_id', $parentId)
                     ->map(function (Category $category) use ($allCategories) {
                         $data = ['id' => $category->id, 'name' => $category->name];
@@ -23,5 +23,6 @@ class CategoryService
                         $data['children'] = $this->getCategoriesTree($category->id, $allCategories);
                         return $data;
                     });
+        return $result;
     }
 }

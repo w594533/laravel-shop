@@ -12,7 +12,6 @@
         "endroid/qr-code": "^3.4",
         "fideloper/proxy": "~4.0",
         "laravel/framework": "5.7.*",
-        "laravel/horizon": "^2.0",
         "laravel/passport": "~4.0",
         "laravel/tinker": "~1.0",
         "liyu/dingo-serializer-switch": "^0.3.1",
@@ -71,5 +70,11 @@
         "optimize-autoloader": true
     },
     "minimum-stability" : "dev",
-    "prefer-stable" : true
+    "prefer-stable" : true,
+    "repositories": {
+        "packagist": {
+            "type": "composer",
+            "url": "https://mirrors.aliyun.com/composer/"
+        }
+    }
 }
