@@ -11,7 +11,7 @@
         "encore/laravel-admin": "^1.5",
         "endroid/qr-code": "^3.4",
         "fideloper/proxy": "~4.0",
-        "laravel/framework": "5.7.*",
+        "laravel/framework": "5.8.*",
         "laravel/passport": "~4.0",
         "laravel/tinker": "~1.0",
         "liyu/dingo-serializer-switch": "^0.3.1",
